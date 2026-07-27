@@ -1,0 +1,29 @@
+{
+  "name": "{{PROJECT_TITLE}}",
+  "appid": "",
+  "description": "{{PROJECT_TITLE}} uni-app application",
+  "versionName": "0.1.0",
+  "versionCode": "100",
+  "transformPx": false,
+  "uniStatistics": {
+    "enable": false
+  },
+  "h5": {
+    "title": "{{PROJECT_TITLE}}",
+    "router": {
+      "mode": "hash"
+    }
+  },
+  "mp-weixin": {
+    "appid": "",
+    "setting": {
+      "urlCheck": true,
+      "es6": true,
+      "postcss": true,
+      "minified": true
+    },
+    "usingComponents": true,
+    "lazyCodeLoading": "requiredComponents"
+  },
+  "vueVersion": "3"
+}

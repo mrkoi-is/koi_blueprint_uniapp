@@ -1,0 +1,12 @@
+---
+description: Route uni-app work through the Koi Agent Skill source of truth
+alwaysApply: true
+---
+
+Read `AGENTS.md`, then inspect `.agent/skills/index.yaml`. Load the active spec
+and only the matching `.agent/skills/<skill-id>/SKILL.md`; do not copy Skill
+content into Cursor rules.
+
+Stable is the default. Read `profiles/weixin-ai-alpha/` only when the spec
+explicitly selects it. Finish implementation work with `npm run validate:fast`,
+then `npm run build:h5`, then `npm run build:mp-weixin`.

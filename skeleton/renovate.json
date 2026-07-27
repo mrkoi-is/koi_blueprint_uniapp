@@ -1,0 +1,24 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "rangeStrategy": "pin",
+  "packageRules": [
+    {
+      "description": "Review the uni-app compiler and verified peers as one compatibility cohort",
+      "matchManagers": ["npm"],
+      "matchPackageNames": [
+        "/^@dcloudio\\//",
+        "@vue/compiler-sfc",
+        "@vue/runtime-core",
+        "pinia",
+        "rollup",
+        "vite",
+        "vue"
+      ],
+      "groupName": "uni-app compatibility cohort",
+      "groupSlug": "uni-app-compatibility-cohort",
+      "separateMajorMinor": false,
+      "separateMinorPatch": false
+    }
+  ]
+}

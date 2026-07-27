@@ -1,0 +1,13 @@
+.DS_Store
+.idea/
+.vscode/
+node_modules/
+dist/
+unpackage/
+coverage/
+*.log
+.env
+.env.*
+!.env.example
+project.private.config.json
+private.*.key

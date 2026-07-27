@@ -1,0 +1,19 @@
+{
+  "name": "koi_blueprint_uniapp",
+  "version": "0.1.0",
+  "private": true,
+  "description": "AI-agent-oriented uni-app blueprint for H5 and WeChat Mini Programs",
+  "type": "module",
+  "engines": {
+    "node": ">=22 <25"
+  },
+  "scripts": {
+    "check:audit": "node scripts/check-open-source-audit.mjs",
+    "check:generator": "node scripts/check-generator-contract.mjs",
+    "create": "node scripts/apply-skeleton.mjs",
+    "validate": "node scripts/validate-blueprint.mjs",
+    "validate:blueprint": "node scripts/validate-blueprint.mjs --blueprint-only",
+    "validate:skeleton": "npm --prefix skeleton run validate"
+  },
+  "license": "MIT"
+}

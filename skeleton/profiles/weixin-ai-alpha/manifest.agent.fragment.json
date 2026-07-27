@@ -1,0 +1,17 @@
+{
+  "mp-weixin": {
+    "appid": "replace-with-your-appid",
+    "lazyCodeLoading": "requiredComponents",
+    "agent": {
+      "instruction": "AGENTS.md",
+      "pageMetadata": "page-meta.json",
+      "skills": [
+        {
+          "name": "replace-with-business-skill",
+          "description": "Replace with one narrow, user-visible business capability.",
+          "path": "ai-packages/replace-with-business-skill"
+        }
+      ]
+    }
+  }
+}

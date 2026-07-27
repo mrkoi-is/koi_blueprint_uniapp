@@ -1,0 +1,123 @@
+schema_version: "2"
+architecture_version: "0.3"
+runtime: "uni-app-vue3"
+primary_target: "mp-weixin"
+source_of_truth: ".agent/skills/"
+global_rules: "AGENTS.md"
+quickstart: "docs/ai-quickstart.md"
+architecture_doc: "docs/architecture/ARCHITECTURE.md"
+spec_template: "specs/000-template.md"
+minimal_read:
+  - ".agent/skills/index.yaml"
+  - "active specs/*.md"
+  - "matched .agent/skills/<skill-id>/SKILL.md files only"
+  - "source and tests required by acceptance scenarios"
+profiles:
+  stable:
+    default: true
+    source: "src/"
+    rule: "Use the exact pinned DCloud cohort and shared uni-app boundaries."
+  weixin-ai-alpha:
+    default: false
+    source: "profiles/weixin-ai-alpha/"
+    skill: "weixin-ai-profile"
+    rule: "Require explicit selection and fail instead of silently falling back."
+default_flow:
+  - "read or create the active spec"
+  - "load the minimum matched Skill set"
+  - "implement the smallest end-to-end slice"
+  - "run focused checks while iterating"
+  - "run npm run validate:fast"
+  - "run npm run build:h5"
+  - "run npm run build:mp-weixin"
+routing:
+  - skill: "project-init"
+    keywords:
+      ["new project", "bootstrap", "skeleton", "初始化", "新建项目", "生成项目"]
+  - skill: "add-feature"
+    keywords:
+      [
+        "feature",
+        "page",
+        "workflow",
+        "页面",
+        "业务模块",
+        "新增功能",
+        "业务流程",
+      ]
+  - skill: "add-platform-adapter"
+    keywords:
+      [
+        "uni api",
+        "wx api",
+        "permission",
+        "media",
+        "payment",
+        "平台能力",
+        "权限",
+        "支付",
+      ]
+  - skill: "add-api-client"
+    keywords:
+      ["api", "request", "openapi", "backend", "dto", "接口", "请求", "后端"]
+  - skill: "cross-platform-debug"
+    keywords:
+      [
+        "h5",
+        "mp-weixin",
+        "platform difference",
+        "跨端",
+        "端差异",
+        "真机不同",
+        "编译差异",
+      ]
+  - skill: "weixin-ai-profile"
+    keywords:
+      [
+        "weixin ai",
+        "ai alpha",
+        "agent mode",
+        "微信 ai",
+        "智能体",
+        "ai skill",
+        "pageMetadata",
+      ]
+  - skill: "testing-scaffold"
+    keywords: ["test", "vitest", "e2e", "devtools", "测试", "补测试", "验收"]
+  - skill: "architecture-review"
+    keywords:
+      [
+        "architecture",
+        "review",
+        "audit",
+        "boundary",
+        "架构",
+        "评审",
+        "审计",
+        "边界",
+      ]
+skills:
+  - id: "project-init"
+    entry: ".agent/skills/project-init/SKILL.md"
+    description: "Create and verify a new Stable uni-app project, with an explicitly selected optional profile."
+  - id: "add-feature"
+    entry: ".agent/skills/add-feature/SKILL.md"
+    description: "Add a spec-first feature slice, thin route page, public contract, and focused tests."
+  - id: "add-platform-adapter"
+    entry: ".agent/skills/add-platform-adapter/SKILL.md"
+    description: "Add a semantic, injected adapter with uni, H5, and mp-weixin implementation boundaries."
+  - id: "add-api-client"
+    entry: ".agent/skills/add-api-client/SKILL.md"
+    description: "Add a typed repository through the shared HTTP contract with runtime DTO validation."
+  - id: "cross-platform-debug"
+    entry: ".agent/skills/cross-platform-debug/SKILL.md"
+    description: "Reproduce, isolate, and verify behavior that differs between H5 and mp-weixin."
+  - id: "weixin-ai-profile"
+    entry: ".agent/skills/weixin-ai-profile/SKILL.md"
+    description: "Explicitly enable or change the optional Weixin AI Alpha profile without weakening Stable."
+  - id: "testing-scaffold"
+    entry: ".agent/skills/testing-scaffold/SKILL.md"
+    description: "Add the lowest-cost test or runtime evidence that proves an acceptance scenario."
+  - id: "architecture-review"
+    entry: ".agent/skills/architecture-review/SKILL.md"
+    description: "Audit uni-app dependencies, Feature boundaries, platform isolation, profiles, and dual builds."

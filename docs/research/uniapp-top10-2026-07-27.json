@@ -1,0 +1,570 @@
+{
+  "schemaVersion": 1,
+  "auditDate": "2026-07-27",
+  "scope": "Open-source Vue 3, TypeScript, Vite-oriented uni-app application starters, generators, and the official CLI baseline.",
+  "scoreDimensions": [
+    {
+      "id": "skeleton",
+      "labelZh": "应用骨架完整度",
+      "max": 5
+    },
+    {
+      "id": "architecture",
+      "labelZh": "架构边界与可维护性",
+      "max": 5
+    },
+    {
+      "id": "crossTarget",
+      "labelZh": "跨端构建证据",
+      "max": 5
+    },
+    {
+      "id": "quality",
+      "labelZh": "测试与 CI",
+      "max": 5
+    },
+    {
+      "id": "maintenance",
+      "labelZh": "维护活跃度",
+      "max": 5
+    },
+    {
+      "id": "reuse",
+      "labelZh": "文档、复用与 AI 协作价值",
+      "max": 5
+    }
+  ],
+  "repositories": [
+    {
+      "rank": 1,
+      "slug": "feige996/unibest",
+      "repository": "https://github.com/feige996/unibest",
+      "ref": "base",
+      "commit": "c5e2d304089979543ff31276c3884eec3804e05a",
+      "pushedAt": "2026-07-06",
+      "stars": 2163,
+      "forks": 261,
+      "license": "MIT",
+      "kind": "starter",
+      "scores": {
+        "skeleton": 5,
+        "architecture": 5,
+        "crossTarget": 5,
+        "quality": 3,
+        "maintenance": 5,
+        "reuse": 5
+      },
+      "total": 28,
+      "strengthsZh": [
+        "多环境配置、HTTP 错误分类、路由、状态和平台文件形成了完整应用骨架。",
+        "具备 Vitest 配置、真实 store 测试以及 OpenAPI 等演进路径。"
+      ],
+      "limitationsZh": [
+        "审计分支没有把质量脚本接入完整 CI。",
+        "默认 UI、自动导入、认证与插件组合对通用 Stable 核心过重。"
+      ],
+      "evidence": [
+        {
+          "url": "https://github.com/feige996/unibest/blob/c5e2d304089979543ff31276c3884eec3804e05a/package.json",
+          "findingZh": "多目标脚本、类型、Lint、Vitest、OpenAPI 与上传工具。"
+        },
+        {
+          "url": "https://github.com/feige996/unibest/blob/c5e2d304089979543ff31276c3884eec3804e05a/src/http/http.ts",
+          "findingZh": "集中式 typed HTTP 与可区分的失败路径。"
+        }
+      ]
+    },
+    {
+      "rank": 2,
+      "slug": "uni-helper/create-uni",
+      "repository": "https://github.com/uni-helper/create-uni",
+      "ref": "main",
+      "commit": "db85c2b59f8ada6e0b0ee91ae34e5d679fb60a46",
+      "pushedAt": "2026-07-27",
+      "stars": 301,
+      "forks": 20,
+      "license": "MIT file; GitHub API NOASSERTION",
+      "kind": "generator",
+      "scores": {
+        "skeleton": 4,
+        "architecture": 5,
+        "crossTarget": 5,
+        "quality": 5,
+        "maintenance": 5,
+        "reuse": 4
+      },
+      "total": 28,
+      "strengthsZh": [
+        "把 TypeScript、Lint、Pinia、Vitest、UI 与插件建模为可组合生成能力。",
+        "跨操作系统、Node 版本、包管理器和 H5/mp-weixin 的生成后验证最完整。"
+      ],
+      "limitationsZh": [
+        "它是生成器平台而非单一可直接评审的应用架构。",
+        "自由组合空间很大，不适合直接成为 Koi 的最小 Stable 默认。"
+      ],
+      "evidence": [
+        {
+          "url": "https://github.com/uni-helper/create-uni/blob/db85c2b59f8ada6e0b0ee91ae34e5d679fb60a46/packages/core/src/index.ts",
+          "findingZh": "生成器按模板、配置、模块、插件与 UI 组合文件。"
+        },
+        {
+          "url": "https://github.com/uni-helper/create-uni/blob/db85c2b59f8ada6e0b0ee91ae34e5d679fb60a46/.github/workflows/core_test.yml",
+          "findingZh": "跨系统生成、安装及多目标构建契约。"
+        }
+      ]
+    },
+    {
+      "rank": 3,
+      "slug": "wot-ui/wot-starter",
+      "repository": "https://github.com/wot-ui/wot-starter",
+      "ref": "v2",
+      "commit": "7b9407b1d54b675ab412d4e2acd3cc93b6f64c49",
+      "pushedAt": "2026-07-13",
+      "stars": 361,
+      "forks": 62,
+      "license": "MIT",
+      "kind": "starter",
+      "scores": {
+        "skeleton": 5,
+        "architecture": 5,
+        "crossTarget": 5,
+        "quality": 3,
+        "maintenance": 5,
+        "reuse": 4
+      },
+      "total": 27,
+      "strengthsZh": [
+        "API、mock、router、store、layout、真实分包和多目标产物形成了产品级骨架。",
+        "Agent Skills 与来源锁展示了仓库内 AI 上下文管理。"
+      ],
+      "limitationsZh": [
+        "没有单元测试，CI 中部分开发 smoke 会吞掉失败。",
+        "UI 展示与插件较重，不能直接复制到通用核心。"
+      ],
+      "evidence": [
+        {
+          "url": "https://github.com/wot-ui/wot-starter/blob/7b9407b1d54b675ab412d4e2acd3cc93b6f64c49/src/api/core/instance.ts",
+          "findingZh": "API 实例与请求职责集中。"
+        },
+        {
+          "url": "https://github.com/wot-ui/wot-starter/blob/7b9407b1d54b675ab412d4e2acd3cc93b6f64c49/.github/workflows/ci.yml",
+          "findingZh": "CI 生成 H5、mp-weixin 与 iOS 产物，但质量门禁不完整。"
+        }
+      ]
+    },
+    {
+      "rank": 4,
+      "slug": "oyjt/uniapp-vue3-template",
+      "repository": "https://github.com/oyjt/uniapp-vue3-template",
+      "ref": "main",
+      "commit": "4d7f3075a739c37c7fd7cff73a5d2ee7d034e113",
+      "pushedAt": "2026-06-04",
+      "stars": 622,
+      "forks": 139,
+      "license": "MIT",
+      "kind": "starter",
+      "scores": {
+        "skeleton": 5,
+        "architecture": 5,
+        "crossTarget": 5,
+        "quality": 2,
+        "maintenance": 5,
+        "reuse": 4
+      },
+      "total": 26,
+      "strengthsZh": [
+        "多环境、请求拦截、状态模块、代码风格与上传脚本覆盖开发全流程。",
+        "包含多种 Agent 规则和 Skill 目录，对 vibe coding 有直接参考。"
+      ],
+      "limitationsZh": [
+        "没有单元测试，CI 只验证并部署 H5。",
+        "重复的 IDE/Agent 规则和默认 UI 插件增加上下文与依赖噪声。"
+      ],
+      "evidence": [
+        {
+          "url": "https://github.com/oyjt/uniapp-vue3-template/blob/4d7f3075a739c37c7fd7cff73a5d2ee7d034e113/build/plugins/index.ts",
+          "findingZh": "Vite 能力集中注册并按职责拆分。"
+        },
+        {
+          "url": "https://github.com/oyjt/uniapp-vue3-template/blob/4d7f3075a739c37c7fd7cff73a5d2ee7d034e113/.github/workflows/deploy.yml",
+          "findingZh": "CI 仅覆盖 H5，未证明微信小程序目标。"
+        }
+      ]
+    },
+    {
+      "rank": 5,
+      "slug": "uni-helper/vitesse-uni-app",
+      "repository": "https://github.com/uni-helper/vitesse-uni-app",
+      "ref": "main",
+      "commit": "ce641a3a6d701c2b0db7006c0be7f430c96ec3d2",
+      "pushedAt": "2026-03-04",
+      "stars": 568,
+      "forks": 60,
+      "license": "MIT",
+      "kind": "starter",
+      "scores": {
+        "skeleton": 4,
+        "architecture": 4,
+        "crossTarget": 5,
+        "quality": 4,
+        "maintenance": 4,
+        "reuse": 5
+      },
+      "total": 26,
+      "strengthsZh": [
+        "跨操作系统与多 Node 版本执行类型、Lint 和多端构建。",
+        "提供真实 uni-app/mp-weixin 页面烟测和成熟插件生态。"
+      ],
+      "limitationsZh": [
+        "CI 虽有测试文件，却没有实际执行测试命令。",
+        "文件路由、layouts、自动导入和 UnoCSS 增加隐式行为。"
+      ],
+      "evidence": [
+        {
+          "url": "https://github.com/uni-helper/vitesse-uni-app/blob/ce641a3a6d701c2b0db7006c0be7f430c96ec3d2/test/index.test.ts",
+          "findingZh": "使用 uni-app 测试环境执行页面级 smoke。"
+        },
+        {
+          "url": "https://github.com/uni-helper/vitesse-uni-app/blob/ce641a3a6d701c2b0db7006c0be7f430c96ec3d2/.github/workflows/check.yml",
+          "findingZh": "跨系统构建矩阵完整，但没有调用 test script。"
+        }
+      ]
+    },
+    {
+      "rank": 6,
+      "slug": "sunpm/unisave",
+      "repository": "https://github.com/sunpm/unisave",
+      "ref": "main",
+      "commit": "2fcbb13831c5bb0f1f8992eb79600ee2a80629da",
+      "pushedAt": "2026-03-11",
+      "stars": 134,
+      "forks": 6,
+      "license": "MIT",
+      "kind": "starter",
+      "scores": {
+        "skeleton": 4,
+        "architecture": 4,
+        "crossTarget": 5,
+        "quality": 3,
+        "maintenance": 4,
+        "reuse": 3
+      },
+      "total": 23,
+      "strengthsZh": [
+        "具备服务、状态、布局、真实分包、类型和 Vitest 工具测试。",
+        "H5 与多小程序目标脚本较完整。"
+      ],
+      "limitationsZh": [
+        "没有 GitHub Actions，无法证明提交级质量门禁。",
+        "默认 UI、UnoCSS 与约定插件对最小蓝图过重。"
+      ],
+      "evidence": [
+        {
+          "url": "https://github.com/sunpm/unisave/blob/2fcbb13831c5bb0f1f8992eb79600ee2a80629da/package.json",
+          "findingZh": "包含多目标、类型、Lint、Stylelint 与 Vitest 脚本。"
+        },
+        {
+          "url": "https://github.com/sunpm/unisave/blob/2fcbb13831c5bb0f1f8992eb79600ee2a80629da/src/services/request/index.ts",
+          "findingZh": "网络请求集中在 service boundary。"
+        }
+      ]
+    },
+    {
+      "rank": 7,
+      "slug": "Ares-Chang/uni-vitesse",
+      "repository": "https://github.com/Ares-Chang/uni-vitesse",
+      "ref": "master",
+      "commit": "76b1e76d333f606d96a95d91fb8bdf4cf4af63f7",
+      "pushedAt": "2026-04-01",
+      "stars": 341,
+      "forks": 57,
+      "license": "MIT",
+      "kind": "starter",
+      "scores": {
+        "skeleton": 4,
+        "architecture": 4,
+        "crossTarget": 5,
+        "quality": 2,
+        "maintenance": 4,
+        "reuse": 4
+      },
+      "total": 23,
+      "strengthsZh": [
+        "Vue 3/TypeScript 下的文件路由、layouts、Pinia 与多目标脚本组合成熟。",
+        "结构简洁，便于理解 uni-helper 插件型 starter 的典型取舍。"
+      ],
+      "limitationsZh": [
+        "没有测试或 CI。",
+        "自动导入与文件约定降低了 Agent 静态追踪的显式性。"
+      ],
+      "evidence": [
+        {
+          "url": "https://github.com/Ares-Chang/uni-vitesse/blob/76b1e76d333f606d96a95d91fb8bdf4cf4af63f7/package.json",
+          "findingZh": "类型、Lint 与 H5/mp-weixin 构建脚本。"
+        },
+        {
+          "url": "https://github.com/Ares-Chang/uni-vitesse/blob/76b1e76d333f606d96a95d91fb8bdf4cf4af63f7/vite.config.ts",
+          "findingZh": "文件路由、layouts、自动导入与 UnoCSS 插件组合。"
+        }
+      ]
+    },
+    {
+      "rank": 8,
+      "slug": "dcloudio/uni-preset-vue",
+      "repository": "https://github.com/dcloudio/uni-preset-vue",
+      "ref": "vite-ts",
+      "commit": "f480e2a61f63c9498518cd8b202dc2dde1e34059",
+      "pushedAt": "2026-07-26",
+      "stars": 372,
+      "forks": 134,
+      "license": "Apache-2.0",
+      "kind": "official-baseline",
+      "scores": {
+        "skeleton": 3,
+        "architecture": 2,
+        "crossTarget": 5,
+        "quality": 2,
+        "maintenance": 5,
+        "reuse": 5
+      },
+      "total": 22,
+      "strengthsZh": [
+        "官方 Vue 3、TypeScript、Vite CLI 与 DCloud 版本 cohort 真值来源。",
+        "保持最小配置，适合做兼容性基线而非产品框架。"
+      ],
+      "limitationsZh": [
+        "没有 lockfile、Lint、测试或 CI。",
+        "没有业务分层、HTTP、状态所有权或 AI 协作约束。"
+      ],
+      "evidence": [
+        {
+          "url": "https://github.com/dcloudio/uni-preset-vue/blob/f480e2a61f63c9498518cd8b202dc2dde1e34059/package.json",
+          "findingZh": "官方 exact DCloud cohort、Vue 3.4.21 与 Vite 5.2.8 基线。"
+        },
+        {
+          "url": "https://github.com/dcloudio/uni-preset-vue/blob/f480e2a61f63c9498518cd8b202dc2dde1e34059/src/main.ts",
+          "findingZh": "官方 Vue 3 createSSRApp 启动方式。"
+        }
+      ]
+    },
+    {
+      "rank": 9,
+      "slug": "vue-rookie/uni-vue3",
+      "repository": "https://github.com/vue-rookie/uni-vue3",
+      "ref": "main",
+      "commit": "d54e00964dda2af827f1a8a42c8b4b45ee3c395b",
+      "pushedAt": "2025-12-12",
+      "stars": 195,
+      "forks": 29,
+      "license": "MIT",
+      "kind": "starter",
+      "scores": {
+        "skeleton": 4,
+        "architecture": 4,
+        "crossTarget": 5,
+        "quality": 2,
+        "maintenance": 3,
+        "reuse": 4
+      },
+      "total": 22,
+      "strengthsZh": [
+        "API、配置、状态、工具、分包和 AI chat 示例构成较完整小程序骨架。",
+        "显式提供 H5 与多个小程序构建脚本。"
+      ],
+      "limitationsZh": [
+        "没有测试或 CI。",
+        "维护与依赖基线弱于 2026 年活跃项目。"
+      ],
+      "evidence": [
+        {
+          "url": "https://github.com/vue-rookie/uni-vue3/blob/d54e00964dda2af827f1a8a42c8b4b45ee3c395b/package.json",
+          "findingZh": "多目标脚本与 Vue 3/TypeScript/Vite 依赖。"
+        },
+        {
+          "url": "https://github.com/vue-rookie/uni-vue3/blob/d54e00964dda2af827f1a8a42c8b4b45ee3c395b/src/utils/platform.ts",
+          "findingZh": "跨端平台判断集中在工具边界。"
+        }
+      ]
+    },
+    {
+      "rank": 10,
+      "slug": "hu-snail/snail-uni",
+      "repository": "https://github.com/hu-snail/snail-uni",
+      "ref": "main",
+      "commit": "f38d06b5519f34f53c483783747af6b17c8f8537",
+      "pushedAt": "2025-10-20",
+      "stars": 109,
+      "forks": 8,
+      "license": "MIT",
+      "kind": "generator",
+      "scores": {
+        "skeleton": 4,
+        "architecture": 4,
+        "crossTarget": 4,
+        "quality": 2,
+        "maintenance": 3,
+        "reuse": 3
+      },
+      "total": 20,
+      "strengthsZh": [
+        "生成器提供 TypeScript/JavaScript、tabBar 和 UI profile，模板包含 API/router/store/layout。",
+        "适合观察中小型可选项脚手架的组织方式。"
+      ],
+      "limitationsZh": [
+        "没有测试或 CI。",
+        "raw template 包含生成占位符，必须通过 CLI 验证，不能直接视为普通应用。"
+      ],
+      "evidence": [
+        {
+          "url": "https://github.com/hu-snail/snail-uni/blob/f38d06b5519f34f53c483783747af6b17c8f8537/create-snail-uni/template/package.json",
+          "findingZh": "生成模板的依赖、脚本与占位符。"
+        },
+        {
+          "url": "https://github.com/hu-snail/snail-uni/blob/f38d06b5519f34f53c483783747af6b17c8f8537/create-snail-uni/template/src/router/interceptors.ts",
+          "findingZh": "模板路由拦截器与应用级接线。"
+        }
+      ]
+    }
+  ],
+  "decisions": [
+    {
+      "id": "AUD-001",
+      "status": "retain",
+      "titleZh": "DCloud 编译器 cohort 继续整组精确锁定",
+      "sources": [
+        "https://github.com/dcloudio/uni-preset-vue/blob/f480e2a61f63c9498518cd8b202dc2dde1e34059/package.json"
+      ],
+      "implementation": [
+        "skeleton/package.json",
+        "skeleton/scripts/check-dcloud-cohort.mjs"
+      ]
+    },
+    {
+      "id": "AUD-002",
+      "status": "adopt",
+      "titleZh": "生成器合同覆盖真实输出、边界选项与跨系统 smoke",
+      "sources": [
+        "https://github.com/uni-helper/create-uni/blob/db85c2b59f8ada6e0b0ee91ae34e5d679fb60a46/.github/workflows/core_test.yml",
+        "https://github.com/uni-helper/vitesse-uni-app/blob/ce641a3a6d701c2b0db7006c0be7f430c96ec3d2/.github/workflows/check.yml"
+      ],
+      "implementation": [
+        "scripts/check-generator-contract.mjs",
+        "scripts/validate-blueprint.mjs",
+        ".github/workflows/ci.yml"
+      ]
+    },
+    {
+      "id": "AUD-003",
+      "status": "adopt",
+      "titleZh": "公开环境输入具备示例、类型、解析与漂移检查",
+      "sources": [
+        "https://github.com/feige996/unibest/blob/c5e2d304089979543ff31276c3884eec3804e05a/env/.env",
+        "https://github.com/oyjt/uniapp-vue3-template/blob/4d7f3075a739c37c7fd7cff73a5d2ee7d034e113/env/.env.development",
+        "https://vite.dev/guide/env-and-mode"
+      ],
+      "implementation": [
+        "skeleton/.env.example",
+        "skeleton/src/core/config/runtime-config.ts",
+        "skeleton/scripts/check-env-contract.mjs"
+      ]
+    },
+    {
+      "id": "AUD-004",
+      "status": "adopt",
+      "titleZh": "HTTP 传输失败语义通过可注入执行器测试",
+      "sources": [
+        "https://github.com/feige996/unibest/blob/c5e2d304089979543ff31276c3884eec3804e05a/src/http/http.ts",
+        "https://github.com/wot-ui/wot-starter/blob/7b9407b1d54b675ab412d4e2acd3cc93b6f64c49/src/api/core/instance.ts"
+      ],
+      "implementation": [
+        "skeleton/src/platform/uni/uni-http-client.ts",
+        "skeleton/tests/unit/uni-http-client.test.ts"
+      ]
+    },
+    {
+      "id": "AUD-005",
+      "status": "adapt",
+      "titleZh": "小程序主包、各分包与总产物分别计量",
+      "sources": [
+        "https://github.com/wot-ui/wot-starter/blob/7b9407b1d54b675ab412d4e2acd3cc93b6f64c49/pages.config.ts",
+        "https://github.com/sunpm/unisave/blob/2fcbb13831c5bb0f1f8992eb79600ee2a80629da/pages.config.ts",
+        "https://uniapp.dcloud.net.cn/collocation/pages?id=globalstyle"
+      ],
+      "implementation": [
+        "skeleton/scripts/check-mp-package-budget.mjs",
+        "skeleton/scripts/check-routes.mjs"
+      ]
+    },
+    {
+      "id": "AUD-006",
+      "status": "retain",
+      "titleZh": "Stable 保持显式 pages.json、manifest.json 与 imports",
+      "sources": [
+        "https://github.com/dcloudio/uni-preset-vue/blob/f480e2a61f63c9498518cd8b202dc2dde1e34059/src/pages.json",
+        "https://github.com/Ares-Chang/uni-vitesse/blob/76b1e76d333f606d96a95d91fb8bdf4cf4af63f7/vite.config.ts"
+      ],
+      "implementation": [
+        "skeleton/src/pages.json",
+        "skeleton/src/manifest.json",
+        "skeleton/scripts/check-architecture.mjs"
+      ]
+    },
+    {
+      "id": "AUD-007",
+      "status": "reject-default",
+      "titleZh": "文件路由、自动导入、layouts、UnoCSS 与 UI 套件仅作可选 profile",
+      "sources": [
+        "https://github.com/uni-helper/create-uni/blob/db85c2b59f8ada6e0b0ee91ae34e5d679fb60a46/packages/core/src/index.ts",
+        "https://github.com/uni-helper/vitesse-uni-app/blob/ce641a3a6d701c2b0db7006c0be7f430c96ec3d2/vite.config.ts"
+      ],
+      "implementation": [
+        "docs/architecture/ARCHITECTURE.md",
+        "docs/open-source-top10-audit.md"
+      ]
+    },
+    {
+      "id": "AUD-008",
+      "status": "adopt",
+      "titleZh": "依赖更新提议必须把 uni-app 编译器与验证过的 peers 放在同一评审",
+      "sources": [
+        "https://github.com/wot-ui/wot-starter/blob/7b9407b1d54b675ab412d4e2acd3cc93b6f64c49/renovate.json",
+        "https://docs.renovatebot.com/configuration-options/#packagerules"
+      ],
+      "implementation": [
+        "renovate.json",
+        "skeleton/renovate.json",
+        "skeleton/scripts/check-dcloud-cohort.mjs"
+      ]
+    }
+  ],
+  "excluded": [
+    {
+      "slug": "codercup/unibest",
+      "reasonZh": "历史高星仓已明确迁移至 feige996/unibest，重复计分会夸大同一方案。"
+    },
+    {
+      "slug": "ATQQ/uni-vue3-ts-template",
+      "reasonZh": "已归档，最后提交为 2024-02-19。"
+    },
+    {
+      "slug": "yang1206/uniapp-template",
+      "reasonZh": "默认分支最新源码仍是旧 Alpha cohort，且无测试/CI。"
+    },
+    {
+      "slug": "MatrixCross/Vue3-Uniapp-Starter",
+      "reasonZh": "混用 DCloud 40807、Vue 3.5、Pinia 3、Vite 6 与 TypeScript 6，缺少兼容性证据。"
+    },
+    {
+      "slug": "wot-design-uni/uview-plus/z-paging/unocss-applet",
+      "reasonZh": "组件或工具库，不是 application skeleton。"
+    },
+    {
+      "slug": "dcloudio/hello-uniapp",
+      "reasonZh": "官方 API 与组件行为展示工程，不是通用应用架构模板。"
+    },
+    {
+      "slug": "dcloudio/uni-starter",
+      "reasonZh": "保留为官方真实分包参考；HBuilderX、uniCloud 与 uni_modules 强耦合，不进入现代 CLI Top 10。"
+    }
+  ]
+}

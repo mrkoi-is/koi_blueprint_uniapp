@@ -1,0 +1,16 @@
+.DS_Store
+.idea/
+.vscode/
+.vite/
+node_modules/
+dist/
+unpackage/
+coverage/
+.tmp/
+*.log
+*.tsbuildinfo
+.env
+.env.*
+!.env.example
+project.private.config.json
+private.*.key
