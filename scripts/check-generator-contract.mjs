@@ -180,6 +180,7 @@ try {
     ".gitattributes",
     ".agent/skills/index.yaml",
     "AGENTS.md",
+    "LICENSE",
     "docs/ai-quickstart.md",
     "package-lock.json",
     "package.json",
@@ -305,10 +306,16 @@ try {
   );
   for (const aiPath of [
     ".agent",
+    ".agents",
+    ".codex",
     ".cursor",
+    ".gemini",
     ".github/copilot-instructions.md",
+    ".kimi-code",
+    ".mcp.json",
     "AGENTS.md",
     "CLAUDE.md",
+    "GEMINI.md",
     "docs",
     "specs",
   ]) {

@@ -1,5 +1,9 @@
 # koi_blueprint_uniapp
 
+[![Validate blueprint](https://github.com/mrkoi-is/koi_blueprint_uniapp/actions/workflows/ci.yml/badge.svg)](https://github.com/mrkoi-is/koi_blueprint_uniapp/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Node](https://img.shields.io/badge/node-%3E%3D22.13%20%3C25-brightgreen.svg)](.nvmrc)
+
 [中文文档](README_ZH.md)
 
 A small, executable uni-app blueprint for Vue 3, TypeScript, Vite, Pinia, H5,
@@ -118,3 +122,16 @@ snapshot.
 
 See `docs/architecture/ARCHITECTURE.md`,
 `docs/vibe-coding-workflow.md`, and `docs/PROJECT_PLAN.md`.
+
+## Contributing
+
+Read [`CONTRIBUTING.md`](CONTRIBUTING.md) for the setup, the spec-driven
+change workflow, and the generator contract. Participation is governed by the
+[Code of Conduct](CODE_OF_CONDUCT.md); report vulnerabilities privately as
+described in [`SECURITY.md`](SECURITY.md).
+
+## License
+
+[MIT](LICENSE) © mrkoi. Generated projects receive their own `LICENSE` file
+whose copyright line is instantiated from the project title — review it before
+publishing your application.

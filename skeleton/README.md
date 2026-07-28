@@ -49,3 +49,8 @@ Read `docs/ai-quickstart.md` before AI-assisted implementation.
 The generated application uses the stable DCloud compiler cohort. Weixin's
 runtime AI development mode is a separate, explicit Alpha capability; read
 `profiles/weixin-ai-alpha/README.md` before enabling it.
+
+## License
+
+[MIT](LICENSE) © The {{PROJECT_TITLE}} authors. Review the copyright line in
+`LICENSE` before publishing.

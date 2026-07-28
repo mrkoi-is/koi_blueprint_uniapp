@@ -1,5 +1,9 @@
 # koi_blueprint_uniapp
 
+[![Validate blueprint](https://github.com/mrkoi-is/koi_blueprint_uniapp/actions/workflows/ci.yml/badge.svg)](https://github.com/mrkoi-is/koi_blueprint_uniapp/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Node](https://img.shields.io/badge/node-%3E%3D22.13%20%3C25-brightgreen.svg)](.nvmrc)
+
 面向 AI Agent 与 vibe coding 的 uni-app 通用架构蓝图，技术基线为 Vue 3、
 TypeScript、Vite、Pinia，默认同时交付 H5 与微信小程序。
 
@@ -135,3 +139,14 @@ Koi 继续保留官方 exact DCloud cohort、显式 pages/manifest/imports、Fea
 - `docs/architecture/ARCHITECTURE.md`
 - `docs/vibe-coding-workflow.md`
 - `docs/PROJECT_PLAN.md`
+
+## 参与贡献
+
+变更流程、环境要求与生成器合同见 [`CONTRIBUTING.md`](CONTRIBUTING.md)；
+参与本仓库需遵守[行为准则](CODE_OF_CONDUCT.md)。安全漏洞请按
+[`SECURITY.md`](SECURITY.md) 私下报告，不要开公开 Issue。
+
+## 许可证
+
+[MIT](LICENSE) © mrkoi。生成项目会附带一份自己的 `LICENSE`，版权行按项目
+标题实例化——发布你的应用前请核对。

@@ -4,6 +4,12 @@ Keep the blueprint tooling, generated uni-app skeleton, documentation, and
 agent instructions aligned. A contribution is complete only when a generated
 project and the checked-in skeleton remain reproducible.
 
+Participation is governed by the [Code of Conduct](CODE_OF_CONDUCT.md).
+Report security vulnerabilities privately as described in
+[`SECURITY.md`](SECURITY.md); never file them as public issues. Bugs and
+proposals start as GitHub issues using the provided templates; substantial
+changes then follow the spec workflow below before a pull request is opened.
+
 ## Set up
 
 Use the Node version in `.nvmrc`, then run the generated-project acceptance
