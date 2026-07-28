@@ -41,6 +41,39 @@ Skills、Profile、文档或示例。
 - Feature 的 model/use-case 不依赖 Vue、Pinia、uni-app 或平台全局。
 - `dist/` 是生成产物，不手改。
 
+## 外部 AI 工具链
+
+生成项目自带两类外部 AI 能力（随 ai-assets 一并复制，`--no-ai-assets`
+会一并跳过）：
+
+- `.agents/skills/uni-app`：uni-helper 社区的 uni-app 知识 Skill，基于官方
+  文档生成，覆盖组件、API、`pages.json` 与条件编译。
+- `.agents/skills/web-design-guidelines`：Vercel 的通用 Web 设计规范，仅作
+  设计参考；项目自身的 `DESIGN.md` 与设计系统优先级更高。
+- `.kimi-code/mcp.json`：Kimi Code 项目级 MCP 配置，含两个 stdio 服务：
+  - `uni-app-x-mcp`（DCloud 官方）：向 AI 提供当前项目的 easycom 组件
+    清单，生成代码时优先使用已有组件。
+  - `uni-doc`（`@uni-helper/mcp`）：uni-app 官方文档检索（RAG）。首次
+    连接需下载向量库与模型文件，启动较慢，已配置 120 秒超时。
+
+以上 MCP 经 `npx` 按需启动，无需全局安装；在生成项目根目录启动 AI 工具时
+自动加载。
+
+同一组 MCP server 按各工具的格式各放一份（内容保持一致，`.kimi-code/mcp.json`
+是带超时等扩展字段的完整版）：
+
+| 工具               | 配置文件                      |
+| ------------------ | ----------------------------- |
+| Kimi Code          | `.kimi-code/mcp.json`         |
+| Claude Code / 兼容 | `.mcp.json`                   |
+| Codex CLI          | `.codex/config.toml`          |
+| Gemini CLI         | `.gemini/settings.json`       |
+| Qoder IDE          | 设置界面粘贴 `.mcp.json` 内容 |
+
+规则文件以 `AGENTS.md` 为公共事实源；`CLAUDE.md`、`GEMINI.md` 只做桥接。
+Skills 放在跨工具通用目录 `.agents/skills/`，Codex、Gemini CLI、Cursor 等
+均原生读取；Claude Code 经 `.claude/skills` 软链共用。
+
 如果用户或 Spec 请求 Alpha，但 Profile 缺失、配置不合法或无法验证，应明确
 失败；不能静默删除 Alpha 配置、模拟成 H5 功能或回退到 Stable。
 

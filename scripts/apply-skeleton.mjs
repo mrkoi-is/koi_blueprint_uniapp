@@ -195,7 +195,14 @@ if (options.target === undefined) {
 
   const filePlan = await collectFiles(skeletonRoot, targetRoot, "skeleton");
   if (options.aiAssets) {
-    const aiDirectories = [".agent", ".cursor"];
+    const aiDirectories = [
+      ".agent",
+      ".cursor",
+      ".agents",
+      ".kimi-code",
+      ".codex",
+      ".gemini",
+    ];
     for (const directory of aiDirectories) {
       filePlan.push(
         ...(await collectFiles(
@@ -209,6 +216,8 @@ if (options.target === undefined) {
     const aiFiles = [
       "AGENTS.md",
       "CLAUDE.md",
+      "GEMINI.md",
+      ".mcp.json",
       ".github/copilot-instructions.md",
       "docs/adr/0000-template.md",
       "docs/adr/0001-uni-app-h5-mp-weixin.md",

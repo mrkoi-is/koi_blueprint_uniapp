@@ -1,0 +1,9 @@
+# MCP servers shared with other AI tools; canonical copy is .kimi-code/mcp.json
+
+[mcp_servers.uni-app-x-mcp]
+command = "npx"
+args = ["-y", "@dcloudio/uni-app-x-mcp"]
+
+[mcp_servers.uni-doc]
+command = "npx"
+args = ["-y", "@uni-helper/mcp"]
