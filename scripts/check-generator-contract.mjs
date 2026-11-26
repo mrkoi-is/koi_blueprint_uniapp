@@ -483,26 +483,30 @@ try {
   }
 
   if (full && errors.length === 0) {
-    const npmCommand = process.platform === "win32" ? "npm.cmd" : "npm";
+    const npmPath = process.env.npm_execpath;
+    const npmCommand = npmPath ? process.execPath : "npm";
+    const npmArgs = npmPath ? [npmPath] : [];
     console.log("RUN install and validate a freshly generated project.");
-    await run(npmCommand, ["ci"], { cwd: targetRoot });
-    await run(npmCommand, ["run", "doctor"], { cwd: targetRoot });
+    await run(npmCommand, [...npmArgs, "ci"], { cwd: targetRoot });
+    await run(npmCommand, [...npmArgs, "run", "doctor"], { cwd: targetRoot });
     await run(
       npmCommand,
-      ["run", "scaffold:feature", "--", "audit-smoke", "detail"],
+      [...npmArgs, "run", "scaffold:feature", "--", "audit-smoke", "detail"],
       { cwd: targetRoot },
     );
     await runExpectFailure(
       npmCommand,
-      ["run", "scaffold:feature", "--", "audit-smoke", "detail"],
+      [...npmArgs, "run", "scaffold:feature", "--", "audit-smoke", "detail"],
       { cwd: targetRoot },
     );
-    await run(npmCommand, ["run", "validate"], { cwd: targetRoot });
+    await run(npmCommand, [...npmArgs, "run", "validate"], { cwd: targetRoot });
     if (process.env.KOI_H5_SMOKE === "1") {
       const install = ["exec", "--", "playwright", "install", "chromium"];
       if (process.platform === "linux") install.push("--with-deps");
-      await run(npmCommand, install, { cwd: targetRoot });
-      await run(npmCommand, ["run", "test:smoke:h5"], { cwd: targetRoot });
+      await run(npmCommand, [...npmArgs, ...install], { cwd: targetRoot });
+      await run(npmCommand, [...npmArgs, "run", "test:smoke:h5"], {
+        cwd: targetRoot,
+      });
     }
   }
 } catch (error) {
