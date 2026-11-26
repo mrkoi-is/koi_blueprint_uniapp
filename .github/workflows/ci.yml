@@ -48,3 +48,23 @@ jobs:
           cache-dependency-path: skeleton/package-lock.json
       - name: Generate, install, scaffold, test, and build
         run: npm run validate
+
+  validate-upgraded-project:
+    name: Validate upgraded projects (${{ matrix.os }})
+    needs: generator-contract
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: skeleton/package-lock.json
+      - run: npm run check:upgrade -- --full
