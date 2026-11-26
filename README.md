@@ -79,6 +79,11 @@ The last option omits editor-agent bridges, Skills, consumer docs, and the spec
 template. Normal generation distributes only consumer-facing AI context, not
 the blueprint's own audit or active build specs.
 
+Generated projects include the `author-agent-docs` Skill for specs, handoffs,
+and maintaining project Skills. In Codex invoke `$author-agent-docs`; in Claude
+Code use `/author-agent-docs`. [Agent quickstart](docs/ai-quickstart.md) ·
+[MCP setup and verification](docs/agent-mcp.md) · [Community audit](docs/agent-tooling-audit.md)
+
 Copy `.env.example` to a local `.env` to override the public local, staging,
 and production API base URLs or the request timeout. `VITE_*` values are
 bundled into the client and must never contain credentials.

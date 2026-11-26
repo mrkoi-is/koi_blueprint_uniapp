@@ -31,6 +31,20 @@ default_flow:
   - "run npm run build:h5"
   - "run npm run build:mp-weixin"
 routing:
+  - skill: "author-agent-docs"
+    keywords:
+      [
+        "write a spec",
+        "implementation brief",
+        "acceptance handoff",
+        "author a project skill",
+        "编写需求规格",
+        "写 Spec",
+        "实施任务书",
+        "验收交接",
+        "编写项目 Skill",
+        "Agent 写作",
+      ]
   - skill: "project-init"
     keywords:
       ["new project", "bootstrap", "skeleton", "初始化", "新建项目", "生成项目"]
@@ -97,6 +111,9 @@ routing:
         "边界",
       ]
 skills:
+  - id: "author-agent-docs"
+    entry: ".agent/skills/author-agent-docs/SKILL.md"
+    description: "Write a project spec, implementation brief, acceptance handoff, or reusable project Skill grounded in repository evidence."
   - id: "project-init"
     entry: ".agent/skills/project-init/SKILL.md"
     description: "Create and verify a new Stable uni-app project, with an explicitly selected optional profile."

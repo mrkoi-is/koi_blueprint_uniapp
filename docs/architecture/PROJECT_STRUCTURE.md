@@ -26,7 +26,9 @@ explicit compiler-cohort change and manifest edit.
 my-uni-app/
 ├── AGENTS.md
 ├── .env.example
-├── .agent/skills/
+├── .agent/skills/                project workflow sources and routing catalog
+├── .agents/skills/               native entries and bundled reference Skills
+├── .claude/skills/               Claude Code entries
 ├── .cursor/rules/
 ├── docs/
 ├── profiles/

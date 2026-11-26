@@ -41,54 +41,40 @@ Skills、Profile、文档或示例。
 - Feature 的 model/use-case 不依赖 Vue、Pinia、uni-app 或平台全局。
 - `dist/` 是生成产物，不手改。
 
-## 外部 AI 工具链
+如果 Spec 选择了微信 AI Alpha，遇到 Profile 缺失、配置不合法或运行时无法验证时，应明确报告对应问题，保留该 Profile 的验收要求。
 
-生成项目自带两类外部 AI 能力（随 ai-assets 一并复制，`--no-ai-assets`
-会一并跳过）：
+## 在生成项目里调用 Skill
 
-- `.agents/skills/uni-app`：uni-helper 社区的 uni-app 知识 Skill，基于官方
-  文档生成，覆盖组件、API、`pages.json` 与条件编译。
-- `.agents/skills/web-design-guidelines`：Vercel 的通用 Web 设计规范，仅作
-  设计参考；项目自身的 `DESIGN.md` 与设计系统优先级更高。
-- `.kimi-code/mcp.json`：Kimi Code 项目级 MCP 配置，含两个 stdio 服务：
-  - `uni-app-x-mcp`（DCloud 官方）：向 AI 提供当前项目的 easycom 组件
-    清单，生成代码时优先使用已有组件。
-  - `uni-doc`（`@uni-helper/mcp`）：uni-app 官方文档检索（RAG）。首次
-    连接需下载向量库与模型文件，启动较慢，已配置 120 秒超时。
+打开生成项目根目录。要写需求或交接，可以直接说「把首页加载失败后的重试写成验收场景，列出哪些行为已有测试」。在 Codex 中可用 `$author-agent-docs`，在 Claude Code 中可用 `/author-agent-docs`。其他客户端可从 `AGENTS.md` 和索引进入同一份正文。
 
-以上 MCP 经 `npx` 按需启动，无需全局安装；在生成项目根目录启动 AI 工具时
-自动加载。
+生成器会在 `.agents/skills/` 和 `.claude/skills/` 写入普通 Markdown 入口，保留 Skill 的名称和触发描述，正文链接回 `.agent/skills/<id>/SKILL.md`。修改项目工作流后，在生成项目根目录运行：
 
-同一组 MCP server 按各工具的格式各放一份（内容保持一致，`.kimi-code/mcp.json`
-是带超时等扩展字段的完整版）：
+```bash
+node scripts/sync-agent-skills.mjs
+node scripts/sync-agent-skills.mjs --check
+```
 
-| 工具               | 配置文件                      |
-| ------------------ | ----------------------------- |
-| Kimi Code          | `.kimi-code/mcp.json`         |
-| Claude Code / 兼容 | `.mcp.json`                   |
-| Codex CLI          | `.codex/config.toml`          |
-| Gemini CLI         | `.gemini/settings.json`       |
-| Qoder IDE          | 设置界面粘贴 `.mcp.json` 内容 |
+`uni-app` 提供 uni-helper 整理的框架文档参考；`web-design-guidelines` 用于明确要求的 H5 界面审查。两份社区 Skill 的正文在 `.agents/skills/`。
 
-规则文件以 `AGENTS.md` 为公共事实源；`CLAUDE.md`、`GEMINI.md` 只做桥接。
-Skills 放在跨工具通用目录 `.agents/skills/`，Codex、Gemini CLI、Cursor 等
-均原生读取；Claude Code 经 `.claude/skills` 软链共用。
+## 在写作中使用 MCP
 
-如果用户或 Spec 请求 Alpha，但 Profile 缺失、配置不合法或无法验证，应明确
-失败；不能静默删除 Alpha 配置、模拟成 H5 功能或回退到 Stable。
+写组件清单时，用默认的 DCloud MCP 查询含 `pages.json` 的源码目录。写 API 兼容性说明时，可调用已配置的 uni-helper 文档检索，再核对结果中的文档原文。首次启动文档服务会下载模型，只做本地组件查询时可在客户端关闭该服务。客户端配置位置、真实工具名称、参数与失败排查见[项目 MCP 手册](agent-mcp.md)。
+
+`--no-ai-assets` 生成的项目省略这些 Skill、MCP 配置和维护脚本。
 
 ## 任务路由
 
-| 任务                       | Skill                  |
-| -------------------------- | ---------------------- |
-| 从 skeleton 创建项目       | `project-init`         |
-| 新 Feature、页面或业务流程 | `add-feature`          |
-| 新平台能力或权限           | `add-platform-adapter` |
-| API、DTO、请求与错误       | `add-api-client`       |
-| H5 与微信端表现不同        | `cross-platform-debug` |
-| 启用或修改微信 AI Alpha    | `weixin-ai-profile`    |
-| 新增测试或验收层           | `testing-scaffold`     |
-| 架构、依赖或包体审查       | `architecture-review`  |
+| 任务                                        | Skill                  |
+| ------------------------------------------- | ---------------------- |
+| 编写 Spec、实施任务书、验收交接或项目 Skill | `author-agent-docs`    |
+| 从 skeleton 创建项目                        | `project-init`         |
+| 新 Feature、页面或业务流程                  | `add-feature`          |
+| 新平台能力或权限                            | `add-platform-adapter` |
+| API、DTO、请求与错误                        | `add-api-client`       |
+| H5 与微信端表现不同                         | `cross-platform-debug` |
+| 启用或修改微信 AI Alpha                     | `weixin-ai-profile`    |
+| 新增测试或验收层                            | `testing-scaffold`     |
+| 架构、依赖或包体审查                        | `architecture-review`  |
 
 以 `.agent/skills/index.yaml` 的当前路由为准。
 

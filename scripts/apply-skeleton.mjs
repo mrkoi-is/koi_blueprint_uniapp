@@ -7,6 +7,7 @@ import {
   writeFile,
 } from "node:fs/promises";
 import path from "node:path";
+import { planSkillEntries, referenceSkills } from "./sync-agent-skills.mjs";
 
 const repositoryRoot = path.resolve(import.meta.dirname, "..");
 const skeletonRoot = path.join(repositoryRoot, "skeleton");
@@ -196,12 +197,8 @@ if (options.target === undefined) {
   const filePlan = await collectFiles(skeletonRoot, targetRoot, "skeleton");
   if (options.aiAssets) {
     const aiDirectories = [
-      ".agent",
-      ".cursor",
-      ".agents",
-      ".kimi-code",
-      ".codex",
-      ".gemini",
+      ".agent/skills",
+      ...referenceSkills.map((name) => `.agents/skills/${name}`),
     ];
     for (const directory of aiDirectories) {
       filePlan.push(
@@ -217,7 +214,16 @@ if (options.target === undefined) {
       "AGENTS.md",
       "CLAUDE.md",
       "GEMINI.md",
+      ".codex/config.toml",
+      ".cursor/mcp.json",
+      ".cursor/rules/koi-agent-skills.mdc",
+      ".gemini/settings.json",
+      ".kimi-code/mcp.json",
       ".mcp.json",
+      ".vscode/mcp.json",
+      "scripts/check-mcp-config.mjs",
+      "scripts/sync-agent-skills.mjs",
+      "docs/agent-mcp.md",
       ".github/copilot-instructions.md",
       "docs/adr/0000-template.md",
       "docs/adr/0001-uni-app-h5-mp-weixin.md",
@@ -233,6 +239,15 @@ if (options.target === undefined) {
         destinationPath: path.join(targetRoot, relativePath),
         label: "ai-assets",
         sourcePath: path.join(repositoryRoot, relativePath),
+      });
+    }
+    for (const { relativePath, content } of await planSkillEntries(
+      repositoryRoot,
+    )) {
+      filePlan.push({
+        destinationPath: path.join(targetRoot, relativePath),
+        label: "ai-assets",
+        content,
       });
     }
   }
@@ -271,12 +286,12 @@ if (options.target === undefined) {
       recursive: true,
     });
 
-    const extension = path.extname(item.sourcePath).toLowerCase();
+    const extension = path.extname(relativePath).toLowerCase();
     if (
       textExtensions.has(extension) ||
-      textBasenames.has(path.basename(item.sourcePath))
+      textBasenames.has(path.basename(relativePath))
     ) {
-      let content = await readFile(item.sourcePath, "utf8");
+      let content = item.content ?? (await readFile(item.sourcePath, "utf8"));
       for (const [token, replacement] of replacements) {
         content = content.replaceAll(token, replacement);
       }

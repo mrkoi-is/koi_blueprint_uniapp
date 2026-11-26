@@ -32,6 +32,7 @@ const requiredFiles = [
   "CODE_OF_CONDUCT.md",
   "CONTRIBUTING.md",
   "SECURITY.md",
+  "docs/agent-tooling-audit.md",
   "docs/ai-quickstart.md",
   "docs/architecture/ARCHITECTURE.md",
   "docs/open-source-top10-audit.md",
@@ -178,7 +179,10 @@ async function walk(directory) {
   const files = [];
 
   for (const entry of entries) {
-    if (entry.isDirectory() && ignoredDirectoryPattern.test(entry.name)) {
+    if (
+      entry.name === ".DS_Store" ||
+      (entry.isDirectory() && ignoredDirectoryPattern.test(entry.name))
+    ) {
       continue;
     }
 
@@ -277,7 +281,7 @@ async function validateStructure() {
     const skeletonRelativePath = path.relative(skeletonRoot, filePath);
     const basename = path.basename(filePath);
 
-    if (basename === ".DS_Store" || basename === ".git") {
+    if (basename === ".git") {
       errors.push(`Forbidden generated-project input: ${relativePath}`);
     }
 

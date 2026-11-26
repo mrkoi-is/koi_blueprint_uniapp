@@ -75,6 +75,9 @@ npm run validate
 参考仍属于应用 skeleton。默认生成只分发消费项目所需的 AI 上下文，不会把本蓝图的
 Top 10 审计或建设规格复制进去。
 
+生成项目可用 `author-agent-docs` 编写 Spec、验收交接和项目 Skill。Codex 用
+`$author-agent-docs`，Claude Code 用 `/author-agent-docs`。[Agent 快速上手](docs/ai-quickstart.md) · [MCP 接入与验证](docs/agent-mcp.md) · [开源项目对照审核](docs/agent-tooling-audit.md)
+
 ## 公开环境配置
 
 复制 `.env.example` 到本地 `.env` 后，可覆盖 local/staging/production API

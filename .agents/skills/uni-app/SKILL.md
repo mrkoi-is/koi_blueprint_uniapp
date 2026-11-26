@@ -4,7 +4,8 @@ description: Comprehensive skill reference for uni-app cross-platform developmen
 metadata:
   author: FlippeDround
   version: "2026.1.30"
-  source: Generated from https://gitcode.com/dcloud/unidocs-zh, skills located at https://github.com/antfu/skills
+  source: https://github.com/uni-helper/skills/tree/15909ff061a38819ad45ad2d89db3b66938eaf84/skills/uniapp
+  source_docs: https://gitcode.com/dcloud/unidocs-zh
 ---
 
 > The skill is based on uni-app documentation, generated at 2026-01-30.
@@ -96,18 +97,11 @@ const res = await uni.request({ url: 'https://api.example.com' })
 3. Test on all target platforms
 4. Use rpx for responsive layouts
 5. Handle platform differences in manifest.json
-6. must use uni-helper tools
 
+### 项目中的 MCP 工具
 
-### MCP扩展
+编写组件说明时，可用 `uni-app-x-mcp` 枚举当前应用的 easycom 组件。将 `projectPath` 指向含 `pages.json` 的绝对路径。显式导入的组件直接查看 Vue 文件和导入位置。
 
-当需要查询 uni-app 官方文档时，优先调用 `search-docs-by-Uniapp-official` MCP 工具搜索相关 API 文档和使用示例。
+核对 API 用法时，先查看本 Skill 的对应 reference。项目中的 `uni-doc` 服务可用时，调用 `search-docs-by-Uniapp-official`，打开结果中的文档链接核对平台和版本。工具不可用时可直接查阅 [uni-app 官方文档](https://uniapp.dcloud.net.cn/)。
 
-**使用场景：**
-- 用户询问特定 API 的详细用法
-- 需要官方文档中的代码示例
-- 查询组件的属性和事件
-- 了解 API 的平台兼容性
-
-**工具安装：**
-如果检测到该 MCP 工具不可用，引导用户访问 https://github.com/uni-helper/mcp 进行安装。
+客户端入口、参数示例和联网验证见 [项目 MCP 手册](../../../docs/agent-mcp.md)。

@@ -18,6 +18,10 @@ Read `docs/architecture/ARCHITECTURE.md` only when a task changes a durable
 boundary. Read `profiles/weixin-ai-alpha/` only when the active spec explicitly
 selects that profile. Never preload every Skill or profile.
 
+For spec writing, acceptance handoffs, or authoring a project Skill, route to
+`author-agent-docs`. For component inventory and framework documentation lookup,
+use the workspace instructions in `docs/agent-mcp.md`.
+
 ## Runtime and profiles
 
 - Runtime: uni-app, Vue 3, strict TypeScript, npm lockfile.

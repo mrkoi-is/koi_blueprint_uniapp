@@ -1,4 +1,5 @@
-import { spawn } from "node:child_process";
+import assert from "node:assert/strict";
+import { execFileSync, spawn } from "node:child_process";
 import {
   access,
   mkdtemp,
@@ -43,6 +44,7 @@ const textExtensions = new Set([
   ".mts",
   ".sass",
   ".scss",
+  ".toml",
   ".ts",
   ".vue",
   ".yaml",
@@ -179,6 +181,16 @@ try {
     ".env.example",
     ".gitattributes",
     ".agent/skills/index.yaml",
+    ".agent/skills/author-agent-docs/SKILL.md",
+    ".agents/skills/uni-app/SKILL.md",
+    ".agents/skills/web-design-guidelines/SKILL.md",
+    ".cursor/rules/koi-agent-skills.mdc",
+    ".github/copilot-instructions.md",
+    "CLAUDE.md",
+    "GEMINI.md",
+    "docs/agent-mcp.md",
+    "scripts/check-mcp-config.mjs",
+    "scripts/sync-agent-skills.mjs",
     "AGENTS.md",
     "LICENSE",
     "docs/ai-quickstart.md",
@@ -214,11 +226,13 @@ try {
   }
 
   for (const blueprintOnlyPath of [
+    "docs/agent-tooling-audit.md",
     "docs/open-source-top10-audit.md",
     "docs/PROJECT_PLAN.md",
     "docs/reference-audit.md",
     "docs/research/uniapp-top10-2026-07-27.json",
     "specs/001-open-source-top10-audit.md",
+    "specs/002-agent-authoring-and-mcp.md",
   ]) {
     if (await exists(path.join(targetRoot, blueprintOnlyPath))) {
       errors.push(
@@ -227,8 +241,37 @@ try {
     }
   }
 
+  const checkMcp = [path.join(targetRoot, "scripts/check-mcp-config.mjs")];
+  const syncSkills = [path.join(targetRoot, "scripts/sync-agent-skills.mjs")];
+  await run(process.execPath, checkMcp, { cwd: targetRoot });
+  await run(process.execPath, [...syncSkills, "--check"], { cwd: targetRoot });
+
+  const sources = await readdir(path.join(targetRoot, ".agent/skills"), {
+    withFileTypes: true,
+  });
+  for (const skill of sources.filter((entry) => entry.isDirectory())) {
+    const canonical = path.join(
+      targetRoot,
+      ".agent/skills",
+      skill.name,
+      "SKILL.md",
+    );
+    for (const client of [".agents", ".claude"]) {
+      const folder = path.join(targetRoot, client, "skills", skill.name);
+      const entry = await readFile(path.join(folder, "SKILL.md"), "utf8");
+      const target = /\[project Skill\]\(([^)]+)\)/u.exec(entry)?.[1];
+      assert.ok(target, `Missing link in ${client} Skill ${skill.name}`);
+      assert.equal(path.resolve(folder, target), canonical);
+    }
+  }
+
   const generatedFiles = await walk(targetRoot);
   for (const filePath of generatedFiles) {
+    assert.notEqual(
+      path.basename(filePath),
+      ".DS_Store",
+      "Generator copied Finder metadata",
+    );
     if (!isTextFile(filePath)) {
       continue;
     }
@@ -258,6 +301,30 @@ try {
       "Generator did not replace {{PROJECT_TITLE}} in src/manifest.json.",
     );
   }
+
+  // Edit a Skill as a consumer would. Stale metadata must be caught, then a
+  // refresh must restore discovery without overwriting a custom native entry.
+  const author = "author-agent-docs/SKILL.md";
+  const source = path.join(targetRoot, ".agent/skills", author);
+  const native = path.join(targetRoot, ".agents/skills", author);
+  const custom =
+    "---\nname: author-agent-docs\ndescription: Local workflow\n---\n";
+  await writeFile(
+    source,
+    (await readFile(source, "utf8")).replace(
+      "description: ",
+      "description: Updated. ",
+    ),
+  );
+  await runExpectFailure(process.execPath, [...syncSkills, "--check"], {
+    cwd: targetRoot,
+  });
+  await run(process.execPath, syncSkills, { cwd: targetRoot });
+  await run(process.execPath, [...syncSkills, "--check"], { cwd: targetRoot });
+  assert.match(await readFile(native, "utf8"), /description: Updated\./u);
+  await writeFile(native, custom);
+  await runExpectFailure(process.execPath, syncSkills, { cwd: targetRoot });
+  assert.equal(await readFile(native, "utf8"), custom);
 
   const sentinelPath = path.join(targetRoot, "keep-user-file.txt");
   await writeFile(sentinelPath, "keep\n", "utf8");
@@ -290,10 +357,19 @@ try {
     errors.push("--force deleted an extra user-owned file.");
   }
 
-  await run(
+  const dryRun = execFileSync(
     process.execPath,
     [generatorPath, dryRunRoot, "--name", "dry-run-project", "--dry-run"],
-    { cwd: repositoryRoot, stdio: "ignore" },
+    { cwd: repositoryRoot, encoding: "utf8" },
+  );
+  const plannedFiles = Array.from(
+    dryRun.matchAll(/^PLAN (.+) \[(?:skeleton|ai-assets)\]\r?$/gmu),
+    (match) => match[1],
+  );
+  assert.deepEqual(
+    plannedFiles.sort(),
+    generatedFiles.map((file) => path.relative(targetRoot, file)).sort(),
+    "Dry run must list the files delivered by a normal generation",
   );
   if (await exists(dryRunRoot)) {
     errors.push("--dry-run wrote a target directory.");
@@ -307,12 +383,16 @@ try {
   for (const aiPath of [
     ".agent",
     ".agents",
+    ".claude",
     ".codex",
     ".cursor",
     ".gemini",
     ".github/copilot-instructions.md",
     ".kimi-code",
     ".mcp.json",
+    ".vscode",
+    "scripts/check-mcp-config.mjs",
+    "scripts/sync-agent-skills.mjs",
     "AGENTS.md",
     "CLAUDE.md",
     "GEMINI.md",

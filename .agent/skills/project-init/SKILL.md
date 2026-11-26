@@ -19,7 +19,9 @@ credentials during scaffolding.
 
 1. Confirm the inputs and active spec. Keep Stable when no profile was
    explicitly selected.
-2. Preview the generated files:
+2. Run the generator from the blueprint checkout (it lives at
+   `scripts/apply-skeleton.mjs` there). From an already generated app, locate
+   that checkout first. Preview the generated files:
 
    ```bash
    node scripts/apply-skeleton.mjs <target> \

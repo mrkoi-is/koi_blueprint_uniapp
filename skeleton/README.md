@@ -25,6 +25,10 @@ npm run dev:mp-weixin
   request timeout. Every `VITE_*` value is bundled into the client and cannot
   be a credential.
 
+When generated with agent assets, open `docs/ai-quickstart.md` to write a spec
+or handoff with `author-agent-docs`. The per-client MCP setup and a component
+lookup example are in `docs/agent-mcp.md`.
+
 ## Commands
 
 | Command                                     | Purpose                                                   |
