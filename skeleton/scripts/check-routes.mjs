@@ -1,5 +1,6 @@
 import { access, readFile } from "node:fs/promises";
 import path from "node:path";
+import { routePathsOverlap } from "./route-paths.mjs";
 
 const projectRoot = path.resolve(import.meta.dirname, "..");
 const sourceRoot = path.join(projectRoot, "src");
@@ -179,21 +180,14 @@ if (pagesConfig !== undefined) {
   const roots = [...subpackageRoots];
   for (const [index, root] of roots.entries()) {
     for (const otherRoot of roots.slice(index + 1)) {
-      if (
-        root.startsWith(`${otherRoot}/`) ||
-        otherRoot.startsWith(`${root}/`)
-      ) {
+      if (routePathsOverlap(root, otherRoot)) {
         errors.push(
           `src/pages.json: nested subPackage roots are forbidden (${root}, ${otherRoot}).`,
         );
       }
     }
     for (const route of mainRoutes) {
-      if (
-        route === root ||
-        route.startsWith(`${root}/`) ||
-        root.startsWith(`${route}/`)
-      ) {
+      if (routePathsOverlap(route, root)) {
         errors.push(
           `src/pages.json: main-package route overlaps subPackage root (${route}, ${root}).`,
         );

@@ -10,6 +10,7 @@ import {
   unlink,
 } from "node:fs/promises";
 import path from "node:path";
+import { routePathsOverlap } from "./route-paths.mjs";
 
 const projectRoot = path.resolve(import.meta.dirname, "..");
 const sourceRoot = path.join(projectRoot, "src");
@@ -83,13 +84,20 @@ if (
       ) {
         throw new Error("src/pages.json pages must be an array of routes.");
       }
-      if (
-        pagesConfig.pages.some((page) => page.path === pagePath) ||
-        (pagesConfig.subPackages ?? []).some((group) =>
-          group.pages.some((page) => `${group.root}/${page.path}` === pagePath),
-        )
-      ) {
+      if (pagesConfig.pages.some((page) => page.path === pagePath)) {
         throw new Error(`Route already exists: ${pagePath}`);
+      }
+      for (const group of pagesConfig.subPackages ?? []) {
+        if (typeof group?.root !== "string" || !Array.isArray(group.pages)) {
+          throw new Error(
+            "src/pages.json subPackages entries require a root and pages.",
+          );
+        }
+        if (routePathsOverlap(pagePath, group.root)) {
+          throw new Error(
+            `Main-package route overlaps subPackage root (${pagePath}, ${group.root}).`,
+          );
+        }
       }
       for (const filePath of files.keys()) {
         try {
