@@ -117,16 +117,16 @@ if (
         await stage.close();
       }
       for (const [filePath, content] of files) {
-        const directory = await mkdir(path.dirname(filePath), {
-          recursive: true,
-        });
-        for (
-          let dir = path.dirname(filePath);
-          directory;
-          dir = path.dirname(dir)
-        ) {
-          directories.push(dir);
-          if (dir === directory) break;
+        let directory = projectRoot;
+        const parent = path.relative(projectRoot, path.dirname(filePath));
+        for (const segment of parent.split(path.sep)) {
+          directory = path.join(directory, segment);
+          try {
+            await mkdir(directory);
+            directories.push(directory);
+          } catch (error) {
+            if (error.code !== "EEXIST") throw error;
+          }
         }
         const file = await open(filePath, "wx");
         created.push(filePath);
@@ -150,7 +150,7 @@ if (
       console.error(`ERROR ${error.message}`);
       process.exitCode = 1;
       for (const file of created) await unlink(file);
-      for (const directory of directories) {
+      for (const directory of directories.reverse()) {
         try {
           await rmdir(directory);
         } catch (cleanupError) {
