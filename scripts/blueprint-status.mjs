@@ -60,6 +60,7 @@ export async function getBlueprintStatus(blueprint, app) {
     source?.schemaVersion !== 1 ||
     source.repository !== blueprintRepository ||
     source.profile !== "stable" ||
+    typeof source.commit !== "string" ||
     !commitPattern.test(source.commit) ||
     typeof source.name !== "string" ||
     typeof source.title !== "string" ||

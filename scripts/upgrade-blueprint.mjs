@@ -546,16 +546,20 @@ async function main() {
       if (result.target)
         console.log(`Stable ${result.target.tag}: ${result.target.sha}`);
       if (result.status === "update-available") {
-        if (
-          gitResult(
-            blueprint,
-            "cat-file",
-            "-e",
-            result.target.sha + "^{commit}",
-          ).status !== 0
-        ) {
+        const missingHistory = [result.current, result.target.sha].some(
+          (sha) =>
+            gitResult(blueprint, "cat-file", "-e", sha + "^{commit}").status !==
+            0,
+        );
+        if (missingHistory) {
+          const shallow =
+            git(blueprint, "rev-parse", "--is-shallow-repository").trim() ===
+            "true";
           console.log(
-            `First fetch the official tag with git fetch ${blueprintRepository}.git tag ${result.target.tag}.`,
+            "In the blueprint checkout, fetch the history needed for preview:",
+          );
+          console.log(
+            `git fetch${shallow ? " --unshallow" : ""} --no-tags ${blueprintRepository}.git refs/tags/${result.target.tag}`,
           );
         }
         const safePath =

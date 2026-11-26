@@ -80,4 +80,4 @@ JSON 字段为 `status`、`current` 和 `target`。目标存在时是 `{tag, sha
 | 2      | `source-unknown`                             | Git HEAD 缺少有效的 Stable 来源      |
 | 2      | `remote-unreachable` / `history-unavailable` | 远端查询失败或 Git 历史不足          |
 
-在预览之前，先按查询输出提示获取缺失的官方标签。正式标签由维护者在发布时打在已完成验收的蓝图提交上。
+如果蓝图本地缺少业务基线或目标提交，先在蓝图目录运行输出中的 `git fetch` 命令，再执行预览。浅克隆会收到补齐历史的命令。正式标签由维护者在发布时打在已完成验收的蓝图提交上。

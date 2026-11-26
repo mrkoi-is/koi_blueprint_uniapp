@@ -1,8 +1,16 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
+import {
+  appendFile,
+  copyFile,
+  mkdir,
+  mkdtemp,
+  rm,
+  writeFile,
+} from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
+import { pathToFileURL } from "node:url";
 import { blueprintRepository } from "./blueprint-source.mjs";
 
 const root = path.resolve(import.meta.dirname, "..");
@@ -65,6 +73,110 @@ async function record(commit) {
   git(app, "add", ".koi-blueprint.json");
   git(app, "commit", "--allow-empty", "-qm", "Record baseline");
 }
+
+async function verifyShallowPreview() {
+  const upstream = path.join(temporary, "official");
+  const checkout = path.join(temporary, "shallow");
+  const consumer = path.join(temporary, "shallow invoice");
+  git(root, "clone", "--quiet", "--no-tags", "--shared", root, upstream);
+  const base = git(upstream, "rev-parse", "HEAD");
+  const generated = spawnSync(
+    process.execPath,
+    [
+      path.join(upstream, "scripts/apply-skeleton.mjs"),
+      consumer,
+      "--name",
+      "invoice",
+      "--no-ai-assets",
+    ],
+    { encoding: "utf8", env },
+  );
+  assert.equal(generated.status, 0, generated.stderr);
+  git(consumer, "init", "-q", "-b", "main");
+  git(consumer, "add", ".");
+  git(consumer, "commit", "-qm", "Generate the business app");
+  const snapshot = () => [
+    git(consumer, "rev-parse", "HEAD"),
+    git(consumer, "write-tree"),
+    git(consumer, "status", "--porcelain", "--untracked-files=all"),
+  ];
+  const initial = snapshot();
+
+  // Exercise the working CLI during local development as well as committed CI.
+  for (const file of ["blueprint-status.mjs", "upgrade-blueprint.mjs"]) {
+    await copyFile(
+      path.join(root, "scripts", file),
+      path.join(upstream, "scripts", file),
+    );
+  }
+  await appendFile(
+    path.join(upstream, "skeleton/README.md"),
+    "\nStable fixture release.\n",
+  );
+  git(upstream, "add", "scripts", "skeleton/README.md");
+  git(upstream, "commit", "-qm", "Release an updated blueprint");
+  const target = git(upstream, "rev-parse", "HEAD");
+  git(upstream, "tag", "v1.0.0");
+  const upstreamUrl = pathToFileURL(upstream).href;
+  git(
+    root,
+    "clone",
+    "--quiet",
+    "--no-tags",
+    "--depth=1",
+    upstreamUrl,
+    checkout,
+  );
+  const options = {
+    cwd: checkout,
+    encoding: "utf8",
+    env: { ...env, GIT_CONFIG_KEY_0: `url.${upstreamUrl}.insteadOf` },
+  };
+  const available = (sha) =>
+    spawnSync("git", ["cat-file", "-e", sha + "^{commit}"], options).status ===
+    0;
+  assert.equal(available(target), true);
+  assert.equal(available(base), false);
+  const status = spawnSync(
+    process.execPath,
+    ["scripts/upgrade-blueprint.mjs", "status", consumer],
+    options,
+  );
+  assert.equal(status.status, 0, status.stderr);
+  assert.equal(
+    available(base),
+    false,
+    "Status must leave the shallow checkout unchanged.",
+  );
+  assert.deepEqual(snapshot(), initial);
+  const lines = status.stdout.split(/\r?\n/u);
+  const fetch = lines.find((line) => line.startsWith("git fetch "));
+  const preview = lines.find((line) =>
+    line.startsWith("npm run upgrade -- preview "),
+  );
+  assert.ok(fetch?.includes("--unshallow"), status.stdout);
+  assert.ok(preview?.endsWith(" --to " + target), status.stdout);
+  for (const command of [fetch, preview]) {
+    const result =
+      process.platform === "win32"
+        ? spawnSync(
+            "powershell.exe",
+            [
+              "-NoProfile",
+              "-NonInteractive",
+              "-ExecutionPolicy",
+              "Bypass",
+              "-Command",
+              command + "; exit $LASTEXITCODE",
+            ],
+            options,
+          )
+        : spawnSync("sh", ["-c", command], options);
+    assert.equal(result.status, 0, result.stderr + result.stdout);
+  }
+  assert.equal(available(base), true);
+  assert.deepEqual(snapshot(), initial);
+}
 try {
   for (const directory of [remote, app]) {
     await mkdir(directory);
@@ -94,6 +206,8 @@ try {
   await writeFile(path.join(app, "src", "manifest.json"), '{"mp-weixin":{}}');
   git(app, "add", "src");
   git(app, "commit", "-qm", "Initialize app");
+  verify("source-unknown", null, 2);
+  await record([base]);
   verify("source-unknown", null, 2);
   await record(base);
   verify("no-release", null);
@@ -126,6 +240,7 @@ try {
     ...env,
     GIT_CONFIG_KEY_0: `url.${path.join(temporary, "missing")}.insteadOf`,
   });
+  await verifyShallowPreview();
   console.log(
     "PASS read-only Stable status against local Git release fixtures.",
   );
