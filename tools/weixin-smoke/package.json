@@ -1,0 +1,7 @@
+{
+  "name": "koi-weixin-smoke",
+  "private": true,
+  "dependencies": {
+    "miniprogram-automator": "0.13.0"
+  }
+}

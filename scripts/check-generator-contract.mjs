@@ -12,6 +12,7 @@ import {
 } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
+import { checkComponents } from "./check-mcp-live.mjs";
 
 const repositoryRoot = path.resolve(import.meta.dirname, "..");
 const arguments_ = new Set(process.argv.slice(2));
@@ -586,6 +587,11 @@ try {
   assert.equal(drift.status, 1);
   assert.match(drift.stderr, /uni-mp-weixin lock entries/u);
   await writeFile(lockPath, lockText);
+
+  await assert.rejects(
+    checkComponents(targetRoot, async () => []),
+    /Marked project/u,
+  );
 
   if (full && errors.length === 0) {
     const npmPath = process.env.npm_execpath;

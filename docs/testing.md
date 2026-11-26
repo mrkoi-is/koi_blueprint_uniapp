@@ -120,3 +120,22 @@ prove:
 - referenced files exist relative to `src/manifest.json`;
 - H5 exposes an explicit alternative or unsupported capability;
 - both normal target builds still pass.
+
+## WeChat production smoke
+
+Run on a desktop with a signed-in WeChat DevTools instance. Set
+`WECHAT_DEVTOOLS_CLI` to the absolute CLI path on Windows or for a custom
+install. Set `WECHAT_DEVTOOLS_PORT` to the service port shown in the IDE.
+Set the development AppID in the test application's manifest, install its
+dependencies, and run its `build:mp-weixin`. From the blueprint root:
+
+```bash
+npm ci --prefix tools/weixin-smoke
+npm run test:smoke:mp-weixin -- ../test-app
+```
+
+The runner copies the build to a temporary project with the same configuration.
+It drives the simulator and replaces the welcome request for the recovery
+assertion. Live API domains, permissions, and device behavior have their own
+verification. AppID and local DevTools settings belong to the operator's test
+environment.
