@@ -35,9 +35,13 @@ jobs:
         run: npm run check:upgrade
 
   validate-generated-project:
-    name: Validate freshly generated project
+    name: Validate freshly generated project (${{ matrix.os }})
     needs: generator-contract
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v5

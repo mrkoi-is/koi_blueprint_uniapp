@@ -44,7 +44,7 @@ function normalizeApiBaseUrl(
   const value = configuredValue?.trim() || DEFAULT_API_BASE_URLS[environment];
   let url: URL;
   try {
-    url = new URL(value);
+    url = new PortableURL(value);
   } catch {
     throw new Error(`${environment} API base URL must be an absolute URL.`);
   }
@@ -111,3 +111,4 @@ export function resolveRuntimeConfig(
     useLocalDemoData: environment === "local",
   };
 }
+import PortableURL from "core-js-pure/features/url/index.js";
