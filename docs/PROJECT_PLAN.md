@@ -1,5 +1,9 @@
 # Project plan
 
+The [iteration and upgrade plan (中文)](iteration-upgrade-plan.md) covers how
+existing apps can adopt blueprint updates, the results of a three-way merge
+trial, and a separately tested DCloud compiler upgrade candidate.
+
 ## Phase 1 — Stable baseline
 
 - uni-app CLI with Vue 3, TypeScript, Vite, and Pinia

@@ -249,6 +249,23 @@ try {
   }
 
   const checkMcp = [path.join(targetRoot, "scripts/check-mcp-config.mjs")];
+  const manifestPath = path.join(targetRoot, ".koi-blueprint.json");
+  const originalSource = await readFile(manifestPath, "utf8");
+  assert.deepEqual(
+    Object.fromEntries(
+      Object.entries(JSON.parse(originalSource)).filter(
+        ([key]) => key !== "commit",
+      ),
+    ),
+    {
+      schemaVersion: 1,
+      repository: "https://github.com/mrkoi-is/koi_blueprint_uniapp",
+      name: generatedName,
+      title: generatedTitle,
+      aiAssets: true,
+      profile: "stable",
+    },
+  );
   const syncSkills = [path.join(targetRoot, "scripts/sync-agent-skills.mjs")];
   await run(process.execPath, checkMcp, { cwd: targetRoot });
   await run(process.execPath, [...syncSkills, "--check"], { cwd: targetRoot });
@@ -399,6 +416,7 @@ try {
   if (!(await exists(sentinelPath))) {
     errors.push("--force deleted an extra user-owned file.");
   }
+  assert.equal(await readFile(manifestPath, "utf8"), originalSource);
 
   const dryRun = execFileSync(
     process.execPath,
@@ -406,7 +424,7 @@ try {
     { cwd: repositoryRoot, encoding: "utf8" },
   );
   const plannedFiles = Array.from(
-    dryRun.matchAll(/^PLAN (.+) \[(?:skeleton|ai-assets)\]\r?$/gmu),
+    dryRun.matchAll(/^PLAN (.+) \[(?:skeleton|ai-assets|source)\]\r?$/gmu),
     (match) => match[1],
   );
   assert.deepEqual(
@@ -451,6 +469,11 @@ try {
   const noAiScripts = JSON.parse(
     await readFile(path.join(noAiRoot, "package.json"), "utf8"),
   ).scripts;
+  const noAiSource = JSON.parse(
+    await readFile(path.join(noAiRoot, ".koi-blueprint.json"), "utf8"),
+  );
+  assert.equal(noAiSource.aiAssets, false);
+  assert.equal(noAiSource.name, "generated-no-ai");
   assert.equal(noAiScripts.doctor, generatedPackage.scripts.doctor);
   assert.ok(!Object.hasOwn(noAiScripts, "check:mcp"));
   assert.ok(!Object.hasOwn(noAiScripts, "check:weixin-mcp"));

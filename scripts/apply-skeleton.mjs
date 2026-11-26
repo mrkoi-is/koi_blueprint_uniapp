@@ -7,6 +7,11 @@ import {
   writeFile,
 } from "node:fs/promises";
 import path from "node:path";
+import {
+  blueprintRepository,
+  sourceCommit,
+  sourceFile,
+} from "./blueprint-source.mjs";
 import { planSkillEntries, referenceSkills } from "./sync-agent-skills.mjs";
 
 const repositoryRoot = path.resolve(import.meta.dirname, "..");
@@ -256,6 +261,41 @@ if (options.target === undefined) {
   }
 
   const collisions = [];
+  const emptyTarget =
+    !(await exists(targetRoot)) ||
+    (await readdir(targetRoot)).every((entry) => entry === ".git");
+  if (emptyTarget) {
+    const sourcePaths = filePlan
+      .filter((item) => item.sourcePath)
+      .map((item) =>
+        path
+          .relative(repositoryRoot, item.sourcePath)
+          .split(path.sep)
+          .join("/"),
+      );
+    const commit = options.dryRun
+      ? null
+      : await sourceCommit(repositoryRoot, sourcePaths);
+    const source = {
+      schemaVersion: 1,
+      repository: blueprintRepository,
+      commit,
+      name: projectName,
+      title: projectTitle,
+      aiAssets: options.aiAssets,
+      profile: "stable",
+    };
+    if (!options.dryRun && commit === null) {
+      console.error(
+        "Blueprint source could not be verified. Confirm it before upgrading.",
+      );
+    }
+    filePlan.push({
+      destinationPath: path.join(targetRoot, sourceFile),
+      label: "source",
+      content: JSON.stringify(source, null, 2) + "\n",
+    });
+  }
   for (const item of filePlan) {
     if (await exists(item.destinationPath)) {
       collisions.push(path.relative(targetRoot, item.destinationPath));
@@ -295,8 +335,10 @@ if (options.target === undefined) {
       textBasenames.has(path.basename(relativePath))
     ) {
       let content = item.content ?? (await readFile(item.sourcePath, "utf8"));
-      for (const [token, replacement] of replacements) {
-        content = content.replaceAll(token, replacement);
+      if (item.label !== "source") {
+        for (const [token, replacement] of replacements) {
+          content = content.replaceAll(token, () => replacement);
+        }
       }
       if (relativePath === "package.json" && options.aiAssets) {
         const manifest = JSON.parse(content);
