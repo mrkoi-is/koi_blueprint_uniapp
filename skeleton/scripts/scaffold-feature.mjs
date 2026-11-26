@@ -1,5 +1,16 @@
-import { access, mkdir, readFile, writeFile } from "node:fs/promises";
+import { randomUUID } from "node:crypto";
+import {
+  lstat,
+  mkdir,
+  open,
+  readFile,
+  rename,
+  rmdir,
+  stat,
+  unlink,
+} from "node:fs/promises";
 import path from "node:path";
+import { routePathsOverlap } from "./route-paths.mjs";
 
 const projectRoot = path.resolve(import.meta.dirname, "..");
 const sourceRoot = path.join(projectRoot, "src");
@@ -47,48 +58,120 @@ if (
     ],
   ]);
 
-  const collisions = [];
-  for (const filePath of files.keys()) {
-    try {
-      await access(filePath);
-      collisions.push(path.relative(projectRoot, filePath));
-    } catch {
-      // Expected for a new Feature.
-    }
-  }
-
-  if (collisions.length > 0) {
+  const pagesConfigPath = path.join(sourceRoot, "pages.json");
+  const lockPath = path.join(sourceRoot, ".koi-scaffold.lock");
+  let lock;
+  try {
+    lock = await open(lockPath, "wx");
+  } catch (error) {
+    if (error.code !== "EEXIST") throw error;
     console.error(
-      `Refusing to overwrite existing files:\n${collisions
-        .map((file) => `  ${file}`)
-        .join("\n")}`,
+      "A Feature scaffold is already running. Retry when it finishes. If it was interrupted, inspect its files before removing src/.koi-scaffold.lock.",
     );
     process.exitCode = 1;
-  } else {
-    for (const [filePath, content] of files) {
-      await mkdir(path.dirname(filePath), { recursive: true });
-      await writeFile(filePath, content, "utf8");
-    }
+  }
 
-    const pagesConfigPath = path.join(sourceRoot, "pages.json");
-    const pagesConfig = JSON.parse(await readFile(pagesConfigPath, "utf8"));
-    if (!Array.isArray(pagesConfig.pages)) {
-      throw new Error("src/pages.json pages must be an array.");
-    }
-    pagesConfig.pages.push({
-      path: pagePath,
-      style: {
-        navigationBarTitleText: pascalName,
-      },
-    });
-    await writeFile(
-      pagesConfigPath,
-      `${JSON.stringify(pagesConfig, null, 2)}\n`,
-      "utf8",
-    );
+  if (lock) {
+    const created = [];
+    const directories = [];
+    let stagedRoute;
+    try {
+      const original = await readFile(pagesConfigPath, "utf8");
+      const pagesConfig = JSON.parse(original);
+      if (
+        !Array.isArray(pagesConfig?.pages) ||
+        pagesConfig.pages.some((page) => typeof page?.path !== "string")
+      ) {
+        throw new Error("src/pages.json pages must be an array of routes.");
+      }
+      if (pagesConfig.pages.some((page) => page.path === pagePath)) {
+        throw new Error(`Route already exists: ${pagePath}`);
+      }
+      for (const group of pagesConfig.subPackages ?? []) {
+        if (typeof group?.root !== "string" || !Array.isArray(group.pages)) {
+          throw new Error(
+            "src/pages.json subPackages entries require a root and pages.",
+          );
+        }
+        if (routePathsOverlap(pagePath, group.root)) {
+          throw new Error(
+            `Main-package route overlaps subPackage root (${pagePath}, ${group.root}).`,
+          );
+        }
+      }
+      for (const filePath of files.keys()) {
+        try {
+          await lstat(filePath);
+          throw new Error(
+            `Refusing to overwrite ${path.relative(projectRoot, filePath)}`,
+          );
+        } catch (error) {
+          if (error.code !== "ENOENT") throw error;
+        }
+      }
 
-    console.log(
-      `Created Feature "${featureName}" and route "${pagePath}". Run npm run validate:fast.`,
-    );
+      pagesConfig.pages.push({
+        path: pagePath,
+        style: { navigationBarTitleText: pascalName },
+      });
+      const tempPath = `${pagesConfigPath}.${randomUUID()}.tmp`;
+      const routeMode = (await stat(pagesConfigPath)).mode & 0o777;
+      const stage = await open(tempPath, "wx", routeMode);
+      stagedRoute = tempPath;
+      try {
+        await stage.writeFile(`${JSON.stringify(pagesConfig, null, 2)}\n`);
+        if (process.platform !== "win32") await stage.chmod(routeMode);
+      } finally {
+        await stage.close();
+      }
+      for (const [filePath, content] of files) {
+        let directory = projectRoot;
+        const parent = path.relative(projectRoot, path.dirname(filePath));
+        for (const segment of parent.split(path.sep)) {
+          directory = path.join(directory, segment);
+          try {
+            await mkdir(directory);
+            directories.push(directory);
+          } catch (error) {
+            if (error.code !== "EEXIST") throw error;
+          }
+        }
+        const file = await open(filePath, "wx");
+        created.push(filePath);
+        try {
+          await file.writeFile(content, "utf8");
+        } finally {
+          await file.close();
+        }
+      }
+      if ((await readFile(pagesConfigPath, "utf8")) !== original) {
+        throw new Error(
+          "src/pages.json changed during scaffolding. Retry with the current routes.",
+        );
+      }
+      await rename(stagedRoute, pagesConfigPath);
+      stagedRoute = undefined;
+      console.log(
+        `Created Feature "${featureName}" and route "${pagePath}". Run npm run validate:fast.`,
+      );
+    } catch (error) {
+      console.error(`ERROR ${error.message}`);
+      process.exitCode = 1;
+      for (const file of created) await unlink(file);
+      for (const directory of directories.reverse()) {
+        try {
+          await rmdir(directory);
+        } catch (cleanupError) {
+          if (cleanupError.code !== "ENOTEMPTY") throw cleanupError;
+        }
+      }
+    } finally {
+      try {
+        if (stagedRoute) await unlink(stagedRoute);
+      } finally {
+        await lock.close();
+        await unlink(lockPath);
+      }
+    }
   }
 }
