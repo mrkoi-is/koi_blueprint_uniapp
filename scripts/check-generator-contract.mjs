@@ -1,11 +1,12 @@
 import assert from "node:assert/strict";
-import { execFileSync, spawn } from "node:child_process";
+import { execFileSync, spawn, spawnSync } from "node:child_process";
 import {
   access,
   mkdtemp,
   readFile,
   readdir,
   rm,
+  symlink,
   writeFile,
 } from "node:fs/promises";
 import os from "node:os";
@@ -342,6 +343,25 @@ try {
   await runExpectFailure(process.execPath, [...syncSkills, "--check"], {
     cwd: targetRoot,
   });
+  // Preserve an alternate spelling of the entry path, as with Windows 8.3 paths.
+  const alias = path.join(temporaryRoot, "project-alias");
+  await symlink(targetRoot, alias, "junction");
+  const stale = spawnSync(
+    process.execPath,
+    [
+      "--preserve-symlinks-main",
+      path.join(alias, "scripts/sync-agent-skills.mjs"),
+      "--check",
+    ],
+    { cwd: targetRoot, encoding: "utf8" },
+  );
+  assert.equal(
+    stale.status,
+    1,
+    "A stale Skill must fail through a directory alias",
+  );
+  assert.ok(stale.stderr.includes(`.agents/skills/${author}`), stale.stderr);
+  assert.ok(stale.stderr.includes(`.claude/skills/${author}`), stale.stderr);
   await run(process.execPath, syncSkills, { cwd: targetRoot });
   await run(process.execPath, [...syncSkills, "--check"], { cwd: targetRoot });
   assert.match(await readFile(native, "utf8"), /description: Updated\./u);

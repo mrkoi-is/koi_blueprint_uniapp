@@ -6,7 +6,6 @@ import {
   writeFile,
 } from "node:fs/promises";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
 
 export const referenceSkills = ["uni-app", "web-design-guidelines"];
@@ -107,9 +106,13 @@ async function sync(root, check) {
   console.log(`Verified ${entries.length} native Skill entries.`);
 }
 
+// Windows can represent the same entry point with both a short and a long path.
 if (
   process.argv[1] &&
-  (await realpath(process.argv[1])) === fileURLToPath(import.meta.url)
+  path.relative(
+    await realpath(process.argv[1]),
+    await realpath(new URL(import.meta.url)),
+  ) === ""
 ) {
   const { values } = parseArgs({ options: { check: { type: "boolean" } } });
   await sync(path.resolve(import.meta.dirname, ".."), values.check);
