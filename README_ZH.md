@@ -153,6 +153,8 @@ Koi 继续保留官方 exact DCloud cohort、显式 pages/manifest/imports、Fea
 - `docs/vibe-coding-workflow.md`
 - `docs/PROJECT_PLAN.md`
 
+[Stable 样例](examples/README.md)提供可运行的 OpenAPI、类型化路由和 Wot 表单应用。
+
 ## 参与贡献
 
 变更流程、环境要求与生成器合同见 [`CONTRIBUTING.md`](CONTRIBUTING.md)；

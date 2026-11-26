@@ -38,7 +38,9 @@
     "validate:skeleton": "npm --prefix skeleton run validate",
     "upgrade": "node scripts/upgrade-blueprint.mjs",
     "check:upgrade": "node scripts/check-upgrade-contract.mjs",
-    "test:smoke:mp-weixin": "node tools/weixin-smoke/run.mjs"
+    "test:smoke:mp-weixin": "node tools/weixin-smoke/run.mjs",
+    "example": "node scripts/create-example.mjs",
+    "check:example": "node scripts/check-example.mjs"
   },
   "license": "MIT"
 }

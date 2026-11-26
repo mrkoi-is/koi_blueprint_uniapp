@@ -135,6 +135,9 @@ snapshot.
 See `docs/architecture/ARCHITECTURE.md`,
 `docs/vibe-coding-workflow.md`, and `docs/PROJECT_PLAN.md`.
 
+Try the runnable OpenAPI, typed routes, and Wot form samples from the
+[Stable reference apps guide](examples/README.md).
+
 ## Contributing
 
 Read [`CONTRIBUTING.md`](CONTRIBUTING.md) for the setup, the spec-driven

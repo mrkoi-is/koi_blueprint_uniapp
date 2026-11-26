@@ -1,0 +1,21 @@
+{
+  "baseSha256": "d6c2b745c113426a519557826e788b1825da8ce79075a974c77ae7caba42b368",
+  "section": "dependencies",
+  "name": "@wot-ui/ui",
+  "version": "2.3.1",
+  "entries": {
+    "node_modules/@wot-ui/ui": {
+      "version": "2.3.1",
+      "resolved": "https://registry.npmjs.org/@wot-ui/ui/-/ui-2.3.1.tgz",
+      "integrity": "sha512-RVyaJx+zGxZjS4jH15rf4HQb1rUtXT8vU9QYOEi5ubHGReCyf+PSu1P4MYiKMwtcP6MhSbN/69MpMzubfbHAvg==",
+      "license": "MIT",
+      "engines": {
+        "HBuilderX": "^3.8.7"
+      },
+      "peerDependencies": {
+        "vue": ">=3.2.47"
+      }
+    }
+  },
+  "removed": []
+}
