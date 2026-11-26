@@ -126,6 +126,9 @@ prove:
 Run on a desktop with a signed-in WeChat DevTools instance. Set
 `WECHAT_DEVTOOLS_CLI` to the absolute CLI path on Windows or for a custom
 install. Set `WECHAT_DEVTOOLS_PORT` to the service port shown in the IDE.
+On Windows point `WECHAT_DEVTOOLS_CLI` at the installation's `cli.bat`.
+The runner launches it through the Windows command interpreter and connects
+the SDK to a separate, automatically selected local automation port.
 Set the development AppID in the test application's manifest, install its
 dependencies, and run its `build:mp-weixin`. From the blueprint root:
 

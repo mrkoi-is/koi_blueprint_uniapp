@@ -6,6 +6,7 @@ import path from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
 import { parseArgs } from "node:util";
 import automator from "miniprogram-automator";
+import { launchWindows } from "./windows-launch.mjs";
 
 const { values, positionals } = parseArgs({
   allowPositionals: true,
@@ -85,12 +86,15 @@ async function mockWelcome(statusCode, data) {
 try {
   const projectPath = path.join(workspace, "mp-weixin");
   await cp(dist, projectPath, { recursive: true, dereference: true });
-  mini = await automator.launch({
-    cliPath,
-    projectPath,
-    timeout: 45_000,
-    trustProject: true,
-  });
+  mini =
+    process.platform === "win32"
+      ? await launchWindows(automator, cliPath, projectPath, port)
+      : await automator.launch({
+          cliPath,
+          projectPath,
+          timeout: 45_000,
+          trustProject: true,
+        });
   mini.on("exception", (event) => {
     exceptions.push(
       String(event?.message ?? event?.stack ?? "application failed to start"),
