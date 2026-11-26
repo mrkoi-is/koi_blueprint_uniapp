@@ -183,6 +183,23 @@ try {
         run(root, process.execPath, [cli, "preview", app, "--to", target]),
         /No file changes/u,
       );
+      const routeExample = path.join(
+        root,
+        "examples",
+        "typed-routes",
+        "scripts",
+        "generate-routes.mjs",
+      );
+      const routeScript = path.join(app, "scripts", "generate-routes.mjs");
+      await copyFile(routeExample, routeScript);
+      run(app, process.execPath, [routeScript]);
+      assert.match(
+        await readFile(
+          path.join(app, "src/platform/uni/page-paths.ts"),
+          "utf8",
+        ),
+        /\/pages\/invoice\/detail/u,
+      );
       git(app, "revert", "--no-edit", "HEAD");
       assert.equal(
         git(app, "rev-parse", "HEAD^{tree}"),

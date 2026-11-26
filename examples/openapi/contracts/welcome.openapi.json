@@ -1,0 +1,28 @@
+{
+  "openapi": "3.0.3",
+  "info": { "title": "Koi Welcome", "version": "1.0.0" },
+  "paths": {
+    "/welcome": {
+      "get": {
+        "operationId": "loadWelcome",
+        "responses": {
+          "200": {
+            "description": "Welcome content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["title", "body"],
+                  "properties": {
+                    "title": { "type": "string" },
+                    "body": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

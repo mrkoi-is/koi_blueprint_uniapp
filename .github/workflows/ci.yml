@@ -74,3 +74,20 @@ jobs:
           cache: npm
           cache-dependency-path: skeleton/package-lock.json
       - run: npm run check:upgrade -- --full
+
+  validate-example:
+    name: Reference app (${{ matrix.example }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        example: [openapi, typed-routes, wot-form]
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: skeleton/package-lock.json
+      - run: npm run check:example -- ${{ matrix.example }} --h5
