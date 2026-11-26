@@ -2,6 +2,7 @@ import { spawnSync } from "node:child_process";
 import {
   mkdir,
   mkdtemp,
+  open,
   readFile,
   realpath,
   rm,
@@ -163,7 +164,16 @@ async function render(workspace, label, source) {
     "--output=" + archive,
     source.commit,
   );
-  output(run(checkout, "tar", ["-xf", archive]));
+  const handle = await open(archive, "r");
+  try {
+    output(
+      run(checkout, "tar", ["-xf", "-"], {
+        stdio: [handle.fd, "pipe", "pipe"],
+      }),
+    );
+  } finally {
+    await handle.close();
+  }
   const args = [
     path.join(checkout, "scripts", "apply-skeleton.mjs"),
     app,
