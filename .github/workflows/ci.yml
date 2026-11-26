@@ -31,6 +31,11 @@ jobs:
           node-version-file: .nvmrc
       - name: Validate audit, blueprint, and generator edge cases
         run: npm run validate:blueprint
+      - name: Verify the Windows WeChat CLI batch launcher
+        if: runner.os == 'Windows'
+        run: node --test tools/weixin-smoke/windows-launch.test.mjs
+      - name: Verify the WeChat homepage request sequence
+        run: node --test tools/weixin-smoke/welcome-requests.test.mjs
       - name: Test upgrade from pinned historical commits
         run: npm run check:upgrade
       - run: npm run check:upgrade-status
