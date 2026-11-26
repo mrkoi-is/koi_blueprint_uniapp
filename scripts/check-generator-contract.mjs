@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { execFileSync, spawn, spawnSync } from "node:child_process";
 import {
   access,
+  mkdir,
   mkdtemp,
   readFile,
   readdir,
@@ -504,6 +505,86 @@ try {
       errors.push(`--no-ai-assets omitted application file ${appPath}.`);
     }
   }
+
+  const featureRoot = path.join(temporaryRoot, "scaffold-regression");
+  await mkdir(featureRoot);
+  const scaffold = path.join("scripts", "scaffold-feature.mjs");
+  const routes = path.join(featureRoot, "src", "pages.json");
+  for (const folder of ["scripts", "src"]) {
+    await mkdir(path.join(featureRoot, folder));
+  }
+  await writeFile(
+    path.join(featureRoot, scaffold),
+    await readFile(path.join(targetRoot, scaffold)),
+  );
+  await writeFile(routes, '{"pages":{}}');
+  const invocation = [scaffold, "invoice", "detail"];
+  await runExpectFailure(process.execPath, invocation, { cwd: featureRoot });
+  assert.deepEqual(
+    (await walk(featureRoot)).sort(),
+    [routes, path.join(featureRoot, scaffold)].sort(),
+  );
+  assert.equal(await readFile(routes, "utf8"), '{"pages":{}}');
+  await writeFile(routes, '{"pages":[]}');
+  const runs = await Promise.allSettled([
+    run(process.execPath, invocation, { cwd: featureRoot, stdio: "ignore" }),
+    run(process.execPath, invocation, { cwd: featureRoot, stdio: "ignore" }),
+  ]);
+  assert.equal(
+    runs.filter((result) => result.status === "fulfilled").length,
+    1,
+  );
+  assert.equal(
+    JSON.parse(await readFile(routes, "utf8")).pages[0].path,
+    "pages/invoice/detail",
+  );
+  const featureFiles = await walk(featureRoot);
+  assert.equal(featureFiles.length, 7);
+  await runExpectFailure(process.execPath, invocation, { cwd: featureRoot });
+  assert.deepEqual(await walk(featureRoot), featureFiles);
+  assert.equal(JSON.parse(await readFile(routes, "utf8")).pages.length, 1);
+
+  const cohortManifestPath = path.join(noAiRoot, "package.json");
+  const lockPath = path.join(noAiRoot, "package-lock.json");
+  const manifestText = await readFile(cohortManifestPath, "utf8");
+  const lockText = await readFile(lockPath, "utf8");
+  const compilerPackages = Object.keys({
+    ...JSON.parse(manifestText).dependencies,
+    ...JSON.parse(manifestText).devDependencies,
+  }).filter(
+    (name) => name.startsWith("@dcloudio/") && name !== "@dcloudio/types",
+  );
+  assert.equal(compilerPackages.length, 7);
+  function runCohort() {
+    return spawnSync(process.execPath, ["scripts/check-dcloud-cohort.mjs"], {
+      cwd: noAiRoot,
+      encoding: "utf8",
+    });
+  }
+  assert.equal(runCohort().status, 0);
+  for (const name of compilerPackages) {
+    const manifest = JSON.parse(manifestText);
+    delete manifest.dependencies[name];
+    delete manifest.devDependencies[name];
+    await writeFile(cohortManifestPath, JSON.stringify(manifest));
+    const result = runCohort();
+    assert.equal(result.status, 1);
+    assert.ok(
+      result.stderr.includes(`Missing required DCloud package ${name}`),
+    );
+  }
+  const peerDrift = JSON.parse(manifestText);
+  peerDrift.devDependencies.vite = "5.2.9";
+  await writeFile(cohortManifestPath, JSON.stringify(peerDrift));
+  assert.match(runCohort().stderr, /vite must use the verified peer/u);
+  await writeFile(cohortManifestPath, manifestText);
+  const lockDrift = JSON.parse(lockText);
+  lockDrift.packages["node_modules/@dcloudio/uni-mp-weixin"].version = "0.0.0";
+  await writeFile(lockPath, JSON.stringify(lockDrift));
+  const drift = runCohort();
+  assert.equal(drift.status, 1);
+  assert.match(drift.stderr, /uni-mp-weixin lock entries/u);
+  await writeFile(lockPath, lockText);
 
   if (full && errors.length === 0) {
     const npmPath = process.env.npm_execpath;

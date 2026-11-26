@@ -8,6 +8,9 @@ const packageJson = JSON.parse(
 const renovateConfig = JSON.parse(
   await readFile(path.join(projectRoot, "renovate.json"), "utf8"),
 );
+const lock = JSON.parse(
+  await readFile(path.join(projectRoot, "package-lock.json"), "utf8"),
+);
 const dependencies = {
   ...packageJson.dependencies,
   ...packageJson.devDependencies,
@@ -16,33 +19,56 @@ const errors = [];
 const cohortEntries = Object.entries(dependencies).filter(
   ([name]) => name.startsWith("@dcloudio/") && name !== "@dcloudio/types",
 );
-const versions = new Set(cohortEntries.map(([, version]) => version));
-
-for (const [name, version] of cohortEntries) {
-  if (typeof version !== "string" || !/^\d+\.\d+\.\d+-/u.test(version)) {
-    errors.push(
-      `${name} must use an exact DCloud cohort version (${version}).`,
-    );
+const required = [
+  "@dcloudio/uni-app",
+  "@dcloudio/uni-components",
+  "@dcloudio/uni-h5",
+  "@dcloudio/uni-mp-weixin",
+  "@dcloudio/uni-cli-shared",
+  "@dcloudio/uni-stacktracey",
+  "@dcloudio/vite-plugin-uni",
+];
+const peers = {
+  "@dcloudio/types": "3.4.31",
+  "@vue/compiler-sfc": "3.4.21",
+  "@vue/runtime-core": "3.4.21",
+  pinia: "2.1.7",
+  rollup: "4.14.3",
+  vite: "5.2.8",
+  vue: "3.4.21",
+};
+const cohort = dependencies["@dcloudio/uni-app"];
+for (const name of required) {
+  if (!Object.hasOwn(dependencies, name)) {
+    errors.push(`Missing required DCloud package ${name}.`);
   }
 }
-if (versions.size !== 1) {
-  errors.push(
-    `DCloud packages must share one cohort, found: ${[...versions].join(", ")}.`,
-  );
+for (const [name, version] of cohortEntries) {
+  if (
+    typeof version !== "string" ||
+    !/^\d+\.\d+\.\d+-[0-9]+$/u.test(version) ||
+    version !== cohort
+  ) {
+    errors.push(`${name} must use exact cohort ${cohort} (found ${version}).`);
+  }
 }
-if (dependencies["@dcloudio/types"] !== "3.4.31") {
-  errors.push(
-    "@dcloudio/types must match the stable cohort peer version 3.4.31.",
-  );
+for (const [name, expected] of Object.entries(peers)) {
+  if (dependencies[name] !== expected) {
+    errors.push(`${name} must use the verified peer version ${expected}.`);
+  }
 }
-if (dependencies.vite !== "5.2.8") {
-  errors.push("Vite must match @dcloudio/vite-plugin-uni peer version 5.2.8.");
-}
-if (dependencies.vue !== "3.4.21") {
-  errors.push("Vue must stay aligned with the DCloud compiler at 3.4.21.");
-}
-if (dependencies.pinia !== "2.1.7") {
-  errors.push("Pinia must stay on the DCloud-compatible 2.1.7 baseline.");
+for (const [name, version] of [...cohortEntries, ...Object.entries(peers)]) {
+  const section = Object.hasOwn(packageJson.dependencies ?? {}, name)
+    ? "dependencies"
+    : "devDependencies";
+  if (
+    lock.packages?.[""]?.[section]?.[name] !== version ||
+    lock.packages?.[`node_modules/${name}`]?.version !== version
+  ) {
+    errors.push(
+      `${name} lock entries must match the declared version ${version}.`,
+    );
+  }
 }
 
 const compatibilityRule = renovateConfig.packageRules?.find(
@@ -78,8 +104,6 @@ if (errors.length > 0) {
   process.exitCode = 1;
 } else {
   console.log(
-    `PASS DCloud cohort ${[...versions][0]} (${String(
-      cohortEntries.length,
-    )} packages).`,
+    `PASS DCloud cohort ${cohort} (${String(cohortEntries.length)} packages).`,
   );
 }
