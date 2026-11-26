@@ -527,12 +527,13 @@ try {
   assert.equal(await readFile(routes, "utf8"), '{"pages":{}}');
   await writeFile(routes, '{"pages":[]}');
   const runs = await Promise.allSettled([
-    run(process.execPath, invocation, { cwd: featureRoot, stdio: "ignore" }),
-    run(process.execPath, invocation, { cwd: featureRoot, stdio: "ignore" }),
+    run(process.execPath, invocation, { cwd: featureRoot }),
+    run(process.execPath, invocation, { cwd: featureRoot }),
   ]);
   assert.equal(
     runs.filter((result) => result.status === "fulfilled").length,
     1,
+    "Exactly one concurrent feature scaffold must succeed.",
   );
   assert.equal(
     JSON.parse(await readFile(routes, "utf8")).pages[0].path,

@@ -112,7 +112,7 @@ if (
       stagedRoute = tempPath;
       try {
         await stage.writeFile(`${JSON.stringify(pagesConfig, null, 2)}\n`);
-        await stage.chmod(routeMode);
+        if (process.platform !== "win32") await stage.chmod(routeMode);
       } finally {
         await stage.close();
       }
