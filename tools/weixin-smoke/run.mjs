@@ -7,17 +7,26 @@ import { setTimeout as delay } from "node:timers/promises";
 import { parseArgs } from "node:util";
 import automator from "miniprogram-automator";
 import { launchWindows } from "./windows-launch.mjs";
+import { replyToWelcome, reachedWelcomeCount } from "./welcome-requests.mjs";
 
 const { values, positionals } = parseArgs({
   allowPositionals: true,
-  options: { scenario: { type: "string", default: "home" } },
+  options: {
+    scenario: { type: "string", default: "home" },
+    "welcome-path": { type: "string", default: "/welcome" },
+  },
 });
 assert.ok(
   positionals.length === 1 &&
     ["home", "home-render", "typed-routes", "wot-form"].includes(
       values.scenario,
     ),
-  "Usage: npm run test:smoke:mp-weixin -- <app-root> [--scenario <home-render|typed-routes|wot-form>]",
+  "Usage: npm run test:smoke:mp-weixin -- <app-root> [--scenario <home-render|typed-routes|wot-form>] [--welcome-path /api/welcome]",
+);
+assert.match(
+  values["welcome-path"],
+  /^(?:\/[^/?#]+)*\/welcome$/u,
+  "Expected a welcome pathname such as /welcome or /api/welcome.",
 );
 const app = path.resolve(positionals[0]);
 const dist = path.join(app, "dist", "build", "mp-weixin");
@@ -78,9 +87,12 @@ async function until(message, probe) {
   throw new Error(message);
 }
 
-async function mockWelcome(statusCode, data) {
-  await mini.mockWxMethod("request", { statusCode, data, header: {} });
-  mocked = true;
+async function untilWelcomeState(message, count, probe) {
+  return until(message, async () => {
+    const state = await probe();
+    const seen = await mini.evaluate(() => getApp().__koiWelcomeRequests);
+    return reachedWelcomeCount(seen, values["welcome-path"], count) && state;
+  });
 }
 
 try {
@@ -116,14 +128,19 @@ try {
   });
 
   if (values.scenario === "home") {
-    await mockWelcome(503, {});
+    await mini.evaluate(() => {
+      getApp().__koiWelcomeRequests = [];
+    });
+    await mini.mockWxMethod("request", replyToWelcome, values["welcome-path"]);
+    mocked = true;
     const page = await mini.reLaunch("/pages/home/index");
     const card = await until("Home state component did not render", () =>
       page.$("wx-home-state"),
     );
     const homeElement = (part) => card.$(`.state-card__${part}`);
-    const retry = await until(
+    const retry = await untilWelcomeState(
       "Recoverable error and retry button did not render",
+      1,
       async () => {
         const error = await homeElement("title");
         const action = await homeElement("action");
@@ -137,13 +154,10 @@ try {
         );
       },
     );
-    await mockWelcome(200, {
-      title: "Welcome back",
-      body: "The workspace is ready.",
-    });
     await retry.tap();
-    await until(
+    await untilWelcomeState(
       "Successful welcome title or body did not render after retry",
+      2,
       async () => {
         const title = await homeElement("title");
         const body = await homeElement("body");

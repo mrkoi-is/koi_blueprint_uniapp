@@ -138,7 +138,9 @@ npm run test:smoke:mp-weixin -- ../test-app
 ```
 
 The runner copies the build to a temporary project with the same configuration.
-It drives the simulator and replaces the welcome request for the recovery
-assertion. Live API domains, permissions, and device behavior have their own
-verification. AppID and local DevTools settings belong to the operator's test
-environment.
+The home scenario records native requests and requires one `GET /welcome`
+before the retry tap and a second after it. When the configured API base URL
+includes a path prefix, pass the expected pathname with
+`--welcome-path /api/welcome`. Live API domains, permissions, and device
+behavior have their own verification. AppID and local DevTools settings belong
+to the operator's test environment.
