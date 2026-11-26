@@ -33,6 +33,7 @@ jobs:
         run: npm run validate:blueprint
       - name: Test upgrade from pinned historical commits
         run: npm run check:upgrade
+      - run: npm run check:upgrade-status
 
   validate-generated-project:
     name: Validate freshly generated project (${{ matrix.os }})
