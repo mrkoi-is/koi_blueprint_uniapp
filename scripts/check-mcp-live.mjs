@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import { spawn, spawnSync } from "node:child_process";
 import { existsSync } from "node:fs";
+import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
+import os from "node:os";
 import path from "node:path";
 
 // Inspector's v1 CLI runs on the template's entire supported Node range.
@@ -138,32 +140,55 @@ async function queryTool(root, server, tool, parameters) {
   return parseResponse(text, server);
 }
 
-async function checkComponents(root) {
-  const app = existsSync(path.join(root, "src/pages.json"))
-    ? root
-    : path.join(root, "skeleton");
-  const projectPath = path.join(app, "src");
-  assert.ok(
-    existsSync(path.join(projectPath, "pages.json")),
-    "Cannot find src/pages.json or skeleton/src/pages.json.",
+export async function checkComponents(root, query = queryTool) {
+  const workspace = await mkdtemp(
+    path.join(os.tmpdir(), "koi-mcp-components-"),
   );
-  const components = await queryTool(
-    root,
-    "uni-app-x-mcp",
-    "Query all components under the project",
-    { projectPath },
-  );
-  assert.ok(
-    Array.isArray(components) &&
-      components.every(
-        (item) =>
-          typeof item?.name === "string" && typeof item.content === "string",
-      ),
-    "Invalid easycom result; expected a component array.",
-  );
-  console.log(
-    `PASS uni-app-x-mcp: tools/call returned ${components.length} easycom components from ${projectPath}`,
-  );
+  const name = "koi-probe";
+  const marker = "KOI_MCP_FIXTURE";
+  async function discover(projectPath) {
+    return query(
+      root,
+      "uni-app-x-mcp",
+      "Query all components under the project",
+      {
+        projectPath,
+      },
+    );
+  }
+  try {
+    const empty = path.join(workspace, "empty", "src");
+    const marked = path.join(workspace, "marked", "src");
+    const component = path.join(marked, "components", name);
+    await mkdir(empty, { recursive: true });
+    await mkdir(component, { recursive: true });
+    const pages = '{"pages":[]}';
+    await writeFile(path.join(empty, "pages.json"), pages);
+    await writeFile(path.join(marked, "pages.json"), pages);
+    await writeFile(
+      path.join(component, `${name}.vue`),
+      `<template><view>${marker}</view></template>\n`,
+    );
+    assert.deepEqual(
+      await discover(empty),
+      [],
+      "Empty project should return no components.",
+    );
+    const result = await discover(marked);
+    assert.ok(
+      Array.isArray(result) &&
+        result.length === 1 &&
+        result[0]?.name === name &&
+        typeof result[0]?.content === "string" &&
+        result[0].content.includes(marker),
+      "Marked project did not return its known easycom component and source.",
+    );
+    console.log(
+      "PASS uni-app-x-mcp: discovered the marked component and returned [] for the empty fixture.",
+    );
+  } finally {
+    await rm(workspace, { recursive: true, force: true });
+  }
 }
 
 async function checkDocumentation(root) {

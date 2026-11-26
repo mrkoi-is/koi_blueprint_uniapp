@@ -1,0 +1,25 @@
+[
+  {
+    "id": "invoice-spec",
+    "prompt": "给发票详情页写一个可实施的规格。需求是输入客户名称并保存，空白时显示错误，同一场景面向 H5 和微信小程序。当前没有后端契约，也未执行端上验证。请给出状态、失败恢复和验收步骤。",
+    "files": ["specs/000-template.md", "skeleton/scripts/scaffold-feature.mjs"]
+  },
+  {
+    "id": "weixin-retry",
+    "prompt": "根据构建记录交接首页失败后的重试验收。请明确 H5 已经观察到什么，以及在微信开发者工具和真机还能如何验证。",
+    "files": [
+      "specs/006-dcloud-stable-cohort.md",
+      "skeleton/tests/smoke/home.spec.ts",
+      "skeleton/src/pages/home/index.vue"
+    ]
+  },
+  {
+    "id": "component-props",
+    "prompt": "根据组件源码写一段可交接的组件用法，说明状态、可选属性、重试事件、调用位置和证据。手头给你的工具观察是：只做过一次项目 easycom 查询，返回空数组。",
+    "files": [
+      "skeleton/src/features/home/components/HomeState.vue",
+      "skeleton/src/pages/home/index.vue",
+      "docs/agent-mcp.md"
+    ]
+  }
+]
