@@ -40,7 +40,8 @@
     "check:upgrade": "node scripts/check-upgrade-contract.mjs",
     "test:smoke:mp-weixin": "node tools/weixin-smoke/run.mjs",
     "example": "node scripts/create-example.mjs",
-    "check:example": "node scripts/check-example.mjs"
+    "check:example": "node scripts/check-example.mjs",
+    "check:upgrade-status": "node scripts/check-upgrade-status.mjs"
   },
   "license": "MIT"
 }

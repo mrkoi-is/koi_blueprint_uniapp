@@ -17,6 +17,8 @@ import {
   sourceFile,
 } from "./blueprint-source.mjs";
 
+import { getBlueprintStatus } from "./blueprint-status.mjs";
+
 const blueprint = path.resolve(import.meta.dirname, "..");
 
 function run(cwd, command, args, options = {}) {
@@ -53,6 +55,7 @@ function parseCommand() {
   const { values, positionals } = parseArgs({
     allowPositionals: true,
     options: {
+      json: { type: "boolean" },
       to: { type: "string" },
       from: { type: "string" },
       name: { type: "string" },
@@ -64,12 +67,15 @@ function parseCommand() {
     },
   });
   const [command, project, ...extra] = positionals;
+  const checkingStatus = command === "status";
   const startsUpgrade = command === "preview" || command === "apply";
   const resumesUpgrade = command === "continue" || command === "abort";
   if (
     !project ||
     extra.length ||
-    (!startsUpgrade && !resumesUpgrade) ||
+    (!startsUpgrade && !resumesUpgrade && !checkingStatus) ||
+    (checkingStatus && Object.keys(values).some((key) => key !== "json")) ||
+    (!checkingStatus && values.json) ||
     (startsUpgrade && !values.to) ||
     (resumesUpgrade && Object.keys(values).length) ||
     (command === "apply" && !values["expect-head"]) ||
@@ -78,7 +84,8 @@ function parseCommand() {
     throw new Error(
       "Usage: npm run upgrade -- <preview|apply> <app-root> --to <commit> [legacy generation options]\n" +
         "Apply requires --expect-head <App HEAD from preview>.\n" +
-        "To resume: npm run upgrade -- <continue|abort> <app-root>",
+        "To resume: npm run upgrade -- <continue|abort> <app-root>\n" +
+        "To check Stable releases: npm run upgrade -- status <app-root> [--json]",
     );
   }
   return { command, project, values };
@@ -514,6 +521,65 @@ async function apply(project, workspace, head, source, target) {
 async function main() {
   const { command, project: projectArgument, values } = parseCommand();
   const project = await resolveProject(projectArgument);
+  if (command === "status") {
+    const result = await getBlueprintStatus(blueprint, project);
+    const messages = {
+      current: "The app uses the current Stable release.",
+      "update-available": "A Stable update is available.",
+      ahead: "The app baseline is ahead of the latest Stable release.",
+      diverged:
+        "The app baseline and latest Stable release have diverged. Review both histories before upgrading.",
+      "no-release":
+        "The upstream repository has no formal Stable version tags.",
+      "source-unknown":
+        "The committed app source is unknown or unsupported. See the upgrade guide.",
+      "remote-unreachable":
+        "Cannot query Stable tags from the official repository.",
+      "history-unavailable":
+        "Cannot verify the Git history required to compare the app with the Stable release.",
+    };
+    if (values.json) {
+      console.log(JSON.stringify(result));
+    } else {
+      console.log(messages[result.status]);
+      if (result.current) console.log(`App source: ${result.current}`);
+      if (result.target)
+        console.log(`Stable ${result.target.tag}: ${result.target.sha}`);
+      if (result.status === "update-available") {
+        const missingHistory = [result.current, result.target.sha].some(
+          (sha) =>
+            gitResult(blueprint, "cat-file", "-e", sha + "^{commit}").status !==
+            0,
+        );
+        if (missingHistory) {
+          const shallow =
+            git(blueprint, "rev-parse", "--is-shallow-repository").trim() ===
+            "true";
+          console.log(
+            "In the blueprint checkout, fetch the history needed for preview:",
+          );
+          console.log(
+            `git fetch${shallow ? " --unshallow" : ""} --no-tags ${blueprintRepository}.git refs/tags/${result.target.tag}`,
+          );
+        }
+        const safePath =
+          process.platform === "win32"
+            ? "'" + project.replaceAll("'", "''") + "'"
+            : "'" + project.replaceAll("'", "'\\''") + "'";
+        console.log(
+          `npm run upgrade -- preview ${safePath} --to ${result.target.sha}`,
+        );
+      }
+    }
+    if (
+      ["source-unknown", "remote-unreachable", "history-unavailable"].includes(
+        result.status,
+      )
+    ) {
+      process.exitCode = 2;
+    }
+    return;
+  }
   const staging = path.join(
     git(project, "rev-parse", "--path-format=absolute", "--git-dir").trim(),
     "koi-upgrade",

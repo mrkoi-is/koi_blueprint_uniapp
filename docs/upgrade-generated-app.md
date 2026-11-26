@@ -58,3 +58,26 @@ npm run upgrade -- abort ../invoice-app
 尚在处理中的升级可用上面的命令放弃。它移除本次独立工作目录及其中尚未
 采用的决议。已经合入的升级可在应用仓库用 `git revert UPGRADE_COMMIT`
 回退，`UPGRADE_COMMIT` 为升级结果的提交 SHA。
+
+## 查询 Stable 更新
+
+在蓝图根目录运行以下命令。它读取应用 HEAD 中已提交的来源记录，并查询官方
+仓库的正式 `vMAJOR.MINOR.PATCH` 标签。候选版本按数字排序，附注标签解析到实际
+提交。查询只读，临时历史会清理。自动化消费者可直接执行 Node 入口取得纯 JSON。
+
+```bash
+npm run upgrade -- status ../invoice-app
+node scripts/upgrade-blueprint.mjs status ../invoice-app --json
+```
+
+JSON 字段为 `status`、`current` 和 `target`。目标存在时是 `{tag, sha}`。
+
+| 退出码 | 状态                                         | 含义                                 |
+| ------ | -------------------------------------------- | ------------------------------------ |
+| 0      | `current` / `update-available`               | 已是当前 Stable 或可复制命令进行预览 |
+| 0      | `ahead` / `diverged`                         | 业务基线领先或与正式发布分叉         |
+| 0      | `no-release`                                 | 官方仓库尚无正式标签                 |
+| 2      | `source-unknown`                             | Git HEAD 缺少有效的 Stable 来源      |
+| 2      | `remote-unreachable` / `history-unavailable` | 远端查询失败或 Git 历史不足          |
+
+如果蓝图本地缺少业务基线或目标提交，先在蓝图目录运行输出中的 `git fetch` 命令，再执行预览。浅克隆会收到补齐历史的命令。正式标签由维护者在发布时打在已完成验收的蓝图提交上。

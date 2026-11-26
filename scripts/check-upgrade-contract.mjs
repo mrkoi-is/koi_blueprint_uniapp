@@ -232,7 +232,11 @@ try {
   git(modified, "commit", "-qm", "Keep customized doctor");
   git(fixture, "rm", "skeleton/scripts/doctor.mjs");
   git(fixture, "commit", "-qm", "Remove doctor in target");
-  for (const file of ["upgrade-blueprint.mjs", "blueprint-source.mjs"]) {
+  for (const file of [
+    "upgrade-blueprint.mjs",
+    "blueprint-source.mjs",
+    "blueprint-status.mjs",
+  ]) {
     await copyFile(
       path.join(root, "scripts", file),
       path.join(fixture, "scripts", file),
