@@ -35,7 +35,9 @@
     "create": "node scripts/apply-skeleton.mjs",
     "validate": "node scripts/validate-blueprint.mjs",
     "validate:blueprint": "node scripts/validate-blueprint.mjs --blueprint-only",
-    "validate:skeleton": "npm --prefix skeleton run validate"
+    "validate:skeleton": "npm --prefix skeleton run validate",
+    "upgrade": "node scripts/upgrade-blueprint.mjs",
+    "check:upgrade": "node scripts/check-upgrade-contract.mjs"
   },
   "license": "MIT"
 }
