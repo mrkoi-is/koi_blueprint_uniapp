@@ -507,44 +507,64 @@ try {
     }
   }
 
-  const featureRoot = path.join(temporaryRoot, "scaffold-regression");
-  await mkdir(featureRoot);
   const scaffold = path.join("scripts", "scaffold-feature.mjs");
-  const routes = path.join(featureRoot, "src", "pages.json");
-  for (const folder of ["scripts", "src"]) {
-    await mkdir(path.join(featureRoot, folder));
-  }
-  await writeFile(
-    path.join(featureRoot, scaffold),
-    await readFile(path.join(targetRoot, scaffold)),
-  );
-  await writeFile(routes, '{"pages":{}}');
+  const routes = path.join(noAiRoot, "src/pages.json");
+  const pages = JSON.parse(await readFile(routes, "utf8"));
+  pages.subPackages = [{ root: "pages/invoice", pages: [{ path: "summary" }] }];
+  const businessPage = path.join(noAiRoot, "src/pages/invoice/summary.vue");
+  await mkdir(path.dirname(businessPage), { recursive: true });
+  const summary = "<template><view>Invoice summary</view></template>\n";
+  await writeFile(businessPage, summary);
+  const originalRoutes = JSON.stringify(pages, null, 2) + "\n";
+  await writeFile(routes, originalRoutes);
+  const originalFiles = await walk(noAiRoot);
+  const checkRoutes = () =>
+    run(process.execPath, ["scripts/check-routes.mjs"], { cwd: noAiRoot });
+  await checkRoutes();
+
   const invocation = [scaffold, "invoice", "detail"];
-  await runExpectFailure(process.execPath, invocation, { cwd: featureRoot });
-  assert.deepEqual(
-    (await walk(featureRoot)).sort(),
-    [routes, path.join(featureRoot, scaffold)].sort(),
-  );
+  await writeFile(routes, '{"pages":{}}');
+  await runExpectFailure(process.execPath, invocation, { cwd: noAiRoot });
+  assert.deepEqual(await walk(noAiRoot), originalFiles);
   assert.equal(await readFile(routes, "utf8"), '{"pages":{}}');
-  await writeFile(routes, '{"pages":[]}');
+  await writeFile(routes, originalRoutes);
+  const overlap = spawnSync(process.execPath, invocation, {
+    cwd: noAiRoot,
+    encoding: "utf8",
+  });
+  assert.equal(
+    overlap.status,
+    1,
+    "A main page cannot enter a subpackage root.",
+  );
+  assert.match(overlap.stderr, /overlaps subPackage root/u);
+  assert.equal(await readFile(routes, "utf8"), originalRoutes);
+  assert.equal(await readFile(businessPage, "utf8"), summary);
+  assert.deepEqual(await walk(noAiRoot), originalFiles);
+
+  const valid = [scaffold, "invoices", "detail"];
   const runs = await Promise.allSettled([
-    run(process.execPath, invocation, { cwd: featureRoot }),
-    run(process.execPath, invocation, { cwd: featureRoot }),
+    run(process.execPath, valid, { cwd: noAiRoot }),
+    run(process.execPath, valid, { cwd: noAiRoot }),
   ]);
   assert.equal(
     runs.filter((result) => result.status === "fulfilled").length,
     1,
     "Exactly one concurrent feature scaffold must succeed.",
   );
-  assert.equal(
-    JSON.parse(await readFile(routes, "utf8")).pages[0].path,
-    "pages/invoice/detail",
+  await checkRoutes();
+  const scaffoldedRoutes = await readFile(routes, "utf8");
+  const updated = JSON.parse(scaffoldedRoutes);
+  assert.deepEqual(updated.subPackages, pages.subPackages);
+  assert.deepEqual(
+    updated.pages.map((page) => page.path),
+    [...pages.pages.map((page) => page.path), "pages/invoices/detail"],
   );
-  const featureFiles = await walk(featureRoot);
-  assert.equal(featureFiles.length, 7);
-  await runExpectFailure(process.execPath, invocation, { cwd: featureRoot });
-  assert.deepEqual(await walk(featureRoot), featureFiles);
-  assert.equal(JSON.parse(await readFile(routes, "utf8")).pages.length, 1);
+  const featureFiles = await walk(noAiRoot);
+  assert.equal(featureFiles.length, originalFiles.length + 5);
+  await runExpectFailure(process.execPath, valid, { cwd: noAiRoot });
+  assert.deepEqual(await walk(noAiRoot), featureFiles);
+  assert.equal(await readFile(routes, "utf8"), scaffoldedRoutes);
 
   const cohortManifestPath = path.join(noAiRoot, "package.json");
   const lockPath = path.join(noAiRoot, "package-lock.json");
