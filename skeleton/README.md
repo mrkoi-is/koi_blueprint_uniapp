@@ -34,6 +34,11 @@ lookup example are in `docs/agent-mcp.md`.
 
 ## Commands
 
+After `npm run build:h5`, run `npx playwright install chromium` once and use
+`npm run test:smoke:h5` to verify the homepage's retry behavior.
+When agent assets are present, `npm run check:agent` checks Skill links and
+MCP configuration without starting any MCP servers.
+
 | Command                                     | Purpose                                                   |
 | ------------------------------------------- | --------------------------------------------------------- |
 | `npm run dev:h5`                            | Start the H5 Vite server                                  |

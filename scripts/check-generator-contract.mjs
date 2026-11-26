@@ -252,6 +252,19 @@ try {
   const syncSkills = [path.join(targetRoot, "scripts/sync-agent-skills.mjs")];
   await run(process.execPath, checkMcp, { cwd: targetRoot });
   await run(process.execPath, [...syncSkills, "--check"], { cwd: targetRoot });
+  const mcpConfigPath = path.join(targetRoot, ".mcp.json");
+  const originalMcp = await readFile(mcpConfigPath, "utf8");
+  const mcpConfig = JSON.parse(originalMcp);
+  mcpConfig.mcpServers["custom-service"] = {
+    command: "local-test-service",
+    args: [],
+  };
+  await writeFile(mcpConfigPath, JSON.stringify(mcpConfig));
+  await run(process.execPath, checkMcp, { cwd: targetRoot });
+  delete mcpConfig.mcpServers["uni-doc"];
+  await writeFile(mcpConfigPath, JSON.stringify(mcpConfig));
+  await runExpectFailure(process.execPath, checkMcp, { cwd: targetRoot });
+  await writeFile(mcpConfigPath, originalMcp);
 
   const sources = await readdir(path.join(targetRoot, ".agent/skills"), {
     withFileTypes: true,
@@ -454,6 +467,8 @@ try {
   assert.equal(noAiScripts.doctor, generatedPackage.scripts.doctor);
   assert.ok(!Object.hasOwn(noAiScripts, "check:mcp"));
   assert.ok(!Object.hasOwn(noAiScripts, "check:weixin-mcp"));
+  assert.ok(!Object.hasOwn(noAiScripts, "check:agent"));
+  assert.ok(!noAiScripts.validate.includes("check:agent"));
   for (const appPath of [
     ".env.example",
     "LOCAL_DEVELOPMENT.md",
@@ -483,6 +498,12 @@ try {
       { cwd: targetRoot },
     );
     await run(npmCommand, ["run", "validate"], { cwd: targetRoot });
+    if (process.env.KOI_H5_SMOKE === "1") {
+      const install = ["exec", "--", "playwright", "install", "chromium"];
+      if (process.platform === "linux") install.push("--with-deps");
+      await run(npmCommand, install, { cwd: targetRoot });
+      await run(npmCommand, ["run", "test:smoke:h5"], { cwd: targetRoot });
+    }
   }
 } catch (error) {
   errors.push(

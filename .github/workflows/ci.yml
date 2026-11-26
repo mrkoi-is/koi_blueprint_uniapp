@@ -43,4 +43,6 @@ jobs:
           cache: npm
           cache-dependency-path: skeleton/package-lock.json
       - name: Generate, install, scaffold, test, and build
+        env:
+          KOI_H5_SMOKE: "1"
         run: npm run validate
