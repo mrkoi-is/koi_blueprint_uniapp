@@ -42,6 +42,11 @@ credentials during scaffolding.
    npm run build:mp-weixin
    ```
 
+   For local setup follow `LOCAL_DEVELOPMENT.md` in the generated app.
+   Run `npm run doctor` for toolchain issues or add `-- --weixin` when the
+   developer needs the WeChat CLI. For projects generated with agent assets,
+   `npm run check:mcp` verifies configuration and `-- --live` tests real calls.
+
 5. If `weixin-ai-alpha` was explicitly selected, load
    `weixin-ai-profile` and follow the application and verification instructions
    owned by `profiles/weixin-ai-alpha/`. Apply it after the Stable skeleton is

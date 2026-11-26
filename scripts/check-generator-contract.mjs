@@ -189,7 +189,12 @@ try {
     "CLAUDE.md",
     "GEMINI.md",
     "docs/agent-mcp.md",
+    "docs/weixin-devtools-mcp.md",
+    "LOCAL_DEVELOPMENT.md",
+    "scripts/doctor.mjs",
     "scripts/check-mcp-config.mjs",
+    "scripts/check-mcp-live.mjs",
+    "scripts/check-weixin-mcp.mjs",
     "scripts/sync-agent-skills.mjs",
     "AGENTS.md",
     "LICENSE",
@@ -233,6 +238,7 @@ try {
     "docs/research/uniapp-top10-2026-07-27.json",
     "specs/001-open-source-top10-audit.md",
     "specs/002-agent-authoring-and-mcp.md",
+    "specs/003-local-development-checks.md",
   ]) {
     if (await exists(path.join(targetRoot, blueprintOnlyPath))) {
       errors.push(
@@ -289,6 +295,23 @@ try {
   const generatedPackage = JSON.parse(
     await readFile(path.join(targetRoot, "package.json"), "utf8"),
   );
+  assert.equal(generatedPackage.scripts.doctor, "node scripts/doctor.mjs");
+  assert.equal(
+    generatedPackage.scripts["check:mcp"],
+    "node scripts/check-mcp-config.mjs",
+  );
+  assert.equal(
+    generatedPackage.scripts["check:weixin-mcp"],
+    "node scripts/check-weixin-mcp.mjs",
+  );
+  // A clean generation has no installed application dependencies yet.
+  await runExpectFailure(process.execPath, ["scripts/doctor.mjs"], {
+    cwd: targetRoot,
+  });
+  await run(process.execPath, ["scripts/check-weixin-mcp.mjs", "--help"], {
+    cwd: targetRoot,
+    stdio: "ignore",
+  });
   if (generatedPackage.name !== generatedName) {
     errors.push("Generator did not replace {{PROJECT_NAME}} in package.json.");
   }
@@ -392,6 +415,8 @@ try {
     ".mcp.json",
     ".vscode",
     "scripts/check-mcp-config.mjs",
+    "scripts/check-mcp-live.mjs",
+    "scripts/check-weixin-mcp.mjs",
     "scripts/sync-agent-skills.mjs",
     "AGENTS.md",
     "CLAUDE.md",
@@ -403,8 +428,16 @@ try {
       errors.push(`--no-ai-assets copied ${aiPath}.`);
     }
   }
+  const noAiScripts = JSON.parse(
+    await readFile(path.join(noAiRoot, "package.json"), "utf8"),
+  ).scripts;
+  assert.equal(noAiScripts.doctor, generatedPackage.scripts.doctor);
+  assert.ok(!Object.hasOwn(noAiScripts, "check:mcp"));
+  assert.ok(!Object.hasOwn(noAiScripts, "check:weixin-mcp"));
   for (const appPath of [
     ".env.example",
+    "LOCAL_DEVELOPMENT.md",
+    "scripts/doctor.mjs",
     "package-lock.json",
     "package.json",
     "src/main.ts",
@@ -418,6 +451,7 @@ try {
     const npmCommand = process.platform === "win32" ? "npm.cmd" : "npm";
     console.log("RUN install and validate a freshly generated project.");
     await run(npmCommand, ["ci"], { cwd: targetRoot });
+    await run(npmCommand, ["run", "doctor"], { cwd: targetRoot });
     await run(
       npmCommand,
       ["run", "scaffold:feature", "--", "audit-smoke", "detail"],

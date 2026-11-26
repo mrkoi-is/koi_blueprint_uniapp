@@ -2,6 +2,14 @@
 
 在生成的项目根目录打开编辑器。模板预置两个无需 API 密钥的 stdio 服务。DCloud 的 `uni-app-x-mcp` 查询当前应用的 easycom 组件，社区的 `uni-doc` 检索 uni-app 文档。DCloud 的组件查询兼容本模板使用的 Vue 3 uni-app，H5 与微信小程序共用一套源码。组件的适用平台和最低版本仍需对照项目配置及官方文档。[DCloud 的适用范围和配置示例](https://doc.dcloud.net.cn/uni-app-x/tutorial/rules_mcp.html)
 
+## 从项目根目录检查
+
+运行 `npm run check:mcp` 离线核对六份配置，运行 `npm run check:mcp -- --live`
+从项目配置发起组件和文档查询，逐项验证真实响应。单个编辑器的工作区信任或工具批准状态可在下方客户端表格所列入口查看。
+
+微信开发者工具自身提供的 MCP 有独立的本机地址。需要检测模拟器客户端接入时，
+先确认 CLI 安装，再用开发者工具给出的地址做工具发现。[微信客户端 MCP 接入与检查](weixin-devtools-mcp.md)
+
 ## 验证一个组件查询
 
 1. 在客户端的 MCP 面板启用项目中的 `uni-app-x-mcp`。客户端通过 `npx` 启动 `@dcloudio/uni-app-x-mcp@0.0.5`，首次启动需要访问 npm。服务无需 API 密钥。
@@ -15,12 +23,12 @@
 node scripts/check-mcp-config.mjs
 ```
 
-要从命令行复测实际调用，可以用官方 Inspector。在 Node 22.23.4+ 的 22.x 或 Node 24.22.1+ 的 24.x 环境中，下面的命令读取项目自己的配置。示例使用 POSIX shell，蓝图仓库中将末行的 `$PWD/src` 改成 `$PWD/skeleton/src`。[Inspector 命令行说明](https://github.com/modelcontextprotocol/inspector/tree/2.16.0)
+需要单独排查某个工具时，可以使用与 `--live` 相同的官方 Inspector 1.0.6；它支持本模板的 Node 版本。下面的命令读取项目自己的配置。示例使用 POSIX shell，蓝图仓库中将末行的 `$PWD/src` 改成 `$PWD/skeleton/src`。[Inspector 命令行说明](https://github.com/modelcontextprotocol/inspector/tree/2997156791354497acb66091c79a2409d7f14429)
 
 ```bash
-npx -y @modelcontextprotocol/inspector@2.16.0 --cli \
+npx -y @modelcontextprotocol/inspector@1.0.6 --cli \
   --config .mcp.json --server uni-app-x-mcp --method tools/list
-npx -y @modelcontextprotocol/inspector@2.16.0 --cli \
+npx -y @modelcontextprotocol/inspector@1.0.6 --cli \
   --config .mcp.json --server uni-app-x-mcp --method tools/call \
   --tool-name 'Query all components under the project' --tool-arg "projectPath=$PWD/src"
 ```
@@ -50,7 +58,7 @@ Qoder CLI 也支持根目录的 `.mcp.json`。使用 Qoder IDE 时，可在 MCP 
 请 Agent 调用 `search-docs-by-Uniapp-official`，传入 `{"query":"uni.navigateTo 页面跳转","k":1}`。也可使用与组件查询相同的 Inspector 验证。
 
 ```bash
-npx -y @modelcontextprotocol/inspector@2.16.0 --cli \
+npx -y @modelcontextprotocol/inspector@1.0.6 --cli \
   --config .mcp.json --server uni-doc --method tools/call \
   --tool-name search-docs-by-Uniapp-official --tool-arg 'query=uni.navigateTo 页面跳转' --tool-arg k=1
 ```

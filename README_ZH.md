@@ -25,6 +25,12 @@ Stable profile 提供：
 Alpha 后，业务 Feature 仍只能依赖窄接口，H5 必须保留 unsupported/fallback 路径，
 并继续通过 Stable 的双构建门禁。
 
+## 本地开发环境
+
+从蓝图根目录运行 `npm --prefix skeleton ci`、`npm run doctor`。做微信端开发时用
+`npm run doctor -- --weixin` 检查客户端 CLI。MCP 配置用 `npm run check:mcp`
+检查，实际调用用 `npm run check:mcp -- --live`。[本地安装、客户端与 MCP 检测指引](skeleton/LOCAL_DEVELOPMENT.md)
+
 ## 立即运行
 
 从蓝图根目录验收“真实生成结果”：

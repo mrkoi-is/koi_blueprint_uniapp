@@ -2,6 +2,9 @@
 
 Generated from the Koi uni-app blueprint.
 
+For a first setup, follow the [local development guide](LOCAL_DEVELOPMENT.md).
+It covers Node/npm, both development targets, WeChat DevTools discovery and MCP checks.
+
 ## Start
 
 ```bash
@@ -47,8 +50,6 @@ the total output separately. Override the internal safety margins with
 `KOI_MP_MAIN_PACKAGE_LIMIT_BYTES`, `KOI_MP_SUBPACKAGE_LIMIT_BYTES`, and
 `KOI_MP_TOTAL_LIMIT_BYTES`;
 `KOI_MP_PACKAGE_LIMIT_BYTES` remains a legacy alias for the main package only.
-
-Read `docs/ai-quickstart.md` before AI-assisted implementation.
 
 The generated application uses the stable DCloud compiler cohort. Weixin's
 runtime AI development mode is a separate, explicit Alpha capability; read

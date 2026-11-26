@@ -27,6 +27,9 @@
   "homepage": "https://github.com/mrkoi-is/koi_blueprint_uniapp#readme",
   "bugs": "https://github.com/mrkoi-is/koi_blueprint_uniapp/issues",
   "scripts": {
+    "doctor": "node skeleton/scripts/doctor.mjs",
+    "check:mcp": "node scripts/check-mcp-config.mjs",
+    "check:weixin-mcp": "node scripts/check-weixin-mcp.mjs",
     "check:audit": "node scripts/check-open-source-audit.mjs",
     "check:generator": "node scripts/check-generator-contract.mjs",
     "create": "node scripts/apply-skeleton.mjs",

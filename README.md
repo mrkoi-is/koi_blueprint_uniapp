@@ -29,6 +29,13 @@ with each generated project. Its templates are never imported or enabled by the
 stable runtime. A project that opts in must keep business Features behind narrow ports, preserve an H5
 unsupported/fallback path, and still pass the stable dual-build gate.
 
+## Local development
+
+Install the app dependencies with `npm --prefix skeleton ci`, then run `npm run doctor`
+from the blueprint root. Use `npm run doctor -- --weixin` for the WeChat CLI,
+`npm run check:mcp` for offline configuration checks and `npm run check:mcp -- --live`
+to test tool calls. [Local setup and client diagnostics](skeleton/LOCAL_DEVELOPMENT.md)
+
 ## Quick start
 
 Validate a freshly generated project from the blueprint root:

@@ -222,8 +222,11 @@ if (options.target === undefined) {
       ".mcp.json",
       ".vscode/mcp.json",
       "scripts/check-mcp-config.mjs",
+      "scripts/check-mcp-live.mjs",
+      "scripts/check-weixin-mcp.mjs",
       "scripts/sync-agent-skills.mjs",
       "docs/agent-mcp.md",
+      "docs/weixin-devtools-mcp.md",
       ".github/copilot-instructions.md",
       "docs/adr/0000-template.md",
       "docs/adr/0001-uni-app-h5-mp-weixin.md",
@@ -294,6 +297,16 @@ if (options.target === undefined) {
       let content = item.content ?? (await readFile(item.sourcePath, "utf8"));
       for (const [token, replacement] of replacements) {
         content = content.replaceAll(token, replacement);
+      }
+      if (relativePath === "package.json" && options.aiAssets) {
+        const manifest = JSON.parse(content);
+        const blueprint = JSON.parse(
+          await readFile(path.join(repositoryRoot, "package.json"), "utf8"),
+        );
+        for (const name of ["check:mcp", "check:weixin-mcp"]) {
+          manifest.scripts[name] = blueprint.scripts[name];
+        }
+        content = `${JSON.stringify(manifest, null, 2)}\n`;
       }
       await writeFile(item.destinationPath, content, "utf8");
     } else {

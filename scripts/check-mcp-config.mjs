@@ -1,9 +1,18 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
+import { parseArgs } from "node:util";
 
+const { values, positionals } = parseArgs({
+  options: { live: { type: "boolean", default: false } },
+  allowPositionals: true,
+});
+assert.ok(
+  positionals.length <= 1,
+  "Usage: check-mcp-config.mjs [root] [--live]",
+);
 const root = path.resolve(
-  process.argv[2] ?? path.join(import.meta.dirname, ".."),
+  positionals[0] ?? path.join(import.meta.dirname, ".."),
 );
 const packages = {
   "uni-app-x-mcp": "@dcloudio/uni-app-x-mcp@0.0.5",
@@ -68,3 +77,8 @@ checkCommands(Object.fromEntries(servers), codexFile);
 console.log(
   "All six workspace configurations include both pinned MCP servers.",
 );
+
+if (values.live) {
+  const { checkLiveServers } = await import("./check-mcp-live.mjs");
+  await checkLiveServers(root);
+}
