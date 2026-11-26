@@ -348,6 +348,9 @@ if (options.target === undefined) {
         for (const name of ["check:mcp", "check:weixin-mcp"]) {
           manifest.scripts[name] = blueprint.scripts[name];
         }
+        manifest.scripts["check:agent"] =
+          "node scripts/sync-agent-skills.mjs --check && npm run check:mcp";
+        manifest.scripts.validate += " && npm run check:agent";
         content = `${JSON.stringify(manifest, null, 2)}\n`;
       }
       await writeFile(item.destinationPath, content, "utf8");

@@ -6,6 +6,8 @@ node_modules/
 dist/
 unpackage/
 coverage/
+test-results/
+playwright-report/
 *.log
 .env
 .env.*
