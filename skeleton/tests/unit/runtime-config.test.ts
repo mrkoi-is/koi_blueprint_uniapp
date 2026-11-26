@@ -1,8 +1,25 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { resolveRuntimeConfig } from "../../src/core/config/runtime-config";
 
 describe("resolveRuntimeConfig", () => {
+  it("can start Weixin on hosts without the browser URL constructor", async () => {
+    vi.resetModules();
+    vi.stubGlobal("URL", undefined);
+    try {
+      const { resolveRuntimeConfig: resolveWithoutUrl } =
+        await import("../../src/core/config/runtime-config");
+      expect(
+        resolveWithoutUrl({
+          buildMode: "production",
+          platform: "mp-weixin",
+        }).apiBaseUrl,
+      ).toBe("https://api.example.com");
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
   it("uses explicit local data in development builds", () => {
     expect(
       resolveRuntimeConfig({
