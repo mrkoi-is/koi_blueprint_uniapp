@@ -1,5 +1,13 @@
 import { spawnSync } from "node:child_process";
-import { mkdir, mkdtemp, readFile, realpath, rm } from "node:fs/promises";
+import {
+  mkdir,
+  mkdtemp,
+  open,
+  readFile,
+  realpath,
+  rm,
+  writeFile,
+} from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { parseArgs } from "node:util";
@@ -52,12 +60,25 @@ function parseCommand() {
       "no-ai-assets": { type: "boolean" },
       "ai-assets": { type: "boolean" },
       "show-conflict": { type: "string" },
+      "expect-head": { type: "string" },
     },
   });
   const [command, project, ...extra] = positionals;
-  if (command !== "preview" || !project || !values.to || extra.length) {
+  const startsUpgrade = command === "preview" || command === "apply";
+  const resumesUpgrade = command === "continue" || command === "abort";
+  if (
+    !project ||
+    extra.length ||
+    (!startsUpgrade && !resumesUpgrade) ||
+    (startsUpgrade && !values.to) ||
+    (resumesUpgrade && Object.keys(values).length) ||
+    (command === "apply" && !values["expect-head"]) ||
+    (command !== "preview" && values["show-conflict"])
+  ) {
     throw new Error(
-      "Usage: npm run upgrade -- preview <app-root> --to <commit> [--from <commit> --name <slug> --title <title> (--ai-assets | --no-ai-assets)]",
+      "Usage: npm run upgrade -- <preview|apply> <app-root> --to <commit> [legacy generation options]\n" +
+        "Apply requires --expect-head <App HEAD from preview>.\n" +
+        "To resume: npm run upgrade -- <continue|abort> <app-root>",
     );
   }
   return { command, project, values };
@@ -143,7 +164,16 @@ async function render(workspace, label, source) {
     "--output=" + archive,
     source.commit,
   );
-  output(run(checkout, "tar", ["-xf", archive]));
+  const handle = await open(archive, "r");
+  try {
+    output(
+      run(checkout, "tar", ["-xf", "-"], {
+        stdio: [handle.fd, "pipe", "pipe"],
+      }),
+    );
+  } finally {
+    await handle.close();
+  }
   const args = [
     path.join(checkout, "scripts", "apply-skeleton.mjs"),
     app,
@@ -281,9 +311,231 @@ async function resolveProject(projectArgument) {
   return project;
 }
 
+function assertAppHead(project, expected) {
+  if (
+    git(project, "rev-parse", "HEAD").trim() !== expected ||
+    git(project, "status", "--porcelain=v1", "--untracked-files=no").trim()
+  ) {
+    throw new Error(
+      "App HEAD changed or tracked files have local changes. Commit your work and preview again.",
+    );
+  }
+}
+
+function localCollisions(project, files) {
+  const normalized =
+    process.platform === "linux"
+      ? files
+      : files.map((file) => file.toLowerCase());
+  return git(
+    project,
+    "ls-files",
+    "--others",
+    "--directory",
+    "--no-empty-directory",
+    "-z",
+  )
+    .split("\0")
+    .filter(Boolean)
+    .filter((file) => {
+      const clean = file.replace(/\/$/u, "");
+      const candidate =
+        process.platform === "linux" ? clean : clean.toLowerCase();
+      return normalized.some(
+        (target) =>
+          candidate === target ||
+          candidate.startsWith(target + "/") ||
+          target.startsWith(candidate + "/"),
+      );
+    });
+}
+
+function npm(repo, ...args) {
+  const options = { stdio: "inherit" };
+  if (process.env.npm_execpath) {
+    output(
+      run(repo, process.execPath, [process.env.npm_execpath, ...args], options),
+    );
+  } else {
+    output(
+      run(repo, "npm", args, {
+        ...options,
+        shell: process.platform === "win32",
+      }),
+    );
+  }
+}
+
+async function workspaceLock(workspace, action) {
+  const lock = workspace + ".lock";
+  const pid = String(process.pid);
+  try {
+    await writeFile(lock, pid, { flag: "wx" });
+  } catch (error) {
+    if (error.code !== "EEXIST") throw error;
+    const owner = Number(await readFile(lock, "utf8"));
+    if (!Number.isSafeInteger(owner) || owner <= 0) {
+      throw new Error(`Incomplete upgrade lock at ${lock}; retry shortly.`);
+    }
+    try {
+      process.kill(owner, 0);
+    } catch (cause) {
+      if (cause.code !== "ESRCH") throw cause;
+      await rm(lock);
+      await writeFile(lock, pid, { flag: "wx" });
+    }
+    if ((await readFile(lock, "utf8")) !== pid) {
+      throw new Error("Another upgrade command is running.");
+    }
+  }
+  try {
+    await action();
+  } finally {
+    await rm(lock, { force: true });
+  }
+}
+
+async function finish(project, workspace, state) {
+  const { head, source, files } = state;
+  const repo = path.join(workspace, "merge");
+  assertAppHead(project, head);
+  if (git(repo, "rev-parse", "HEAD").trim() !== state.mergeHead) {
+    throw new Error(
+      "Stage the conflict resolution with git add; leave the upgrade commit to continue.",
+    );
+  }
+  if (git(repo, "ls-files", "-u") || git(repo, "diff", "--name-only")) {
+    console.error(
+      `Resolve and stage the changes in ${repo}, then run continue.`,
+    );
+    process.exitCode = 1;
+    return;
+  }
+  const branch = "koi-upgrade-" + source.commit.slice(0, 12);
+  const ref = "refs/heads/" + branch;
+  const collision = localCollisions(project, files);
+  if (collision.length)
+    throw new Error(
+      "Move aside occupied upgrade paths: " + collision.join(", "),
+    );
+  if (gitResult(project, "show-ref", "--verify", "--quiet", ref).status === 0) {
+    throw new Error(
+      `App branch ${branch} already exists; review that branch or rename it before retrying.`,
+    );
+  }
+  const provenance = path.join(repo, sourceFile);
+  await writeFile(provenance, JSON.stringify(source, null, 2) + "\n");
+  git(repo, "add", "--force", "--", sourceFile);
+  const acceptedTree = git(repo, "write-tree").trim();
+  console.log(
+    `Validating the upgrade in ${repo}. If validation fails, fix and stage changes there, then run continue.`,
+  );
+  npm(repo, "ci");
+  npm(repo, "run", "validate");
+  assertAppHead(project, head);
+  if (
+    git(repo, "write-tree").trim() !== acceptedTree ||
+    git(repo, "status", "--porcelain=v1")
+      .split("\n")
+      .some(
+        (line) => line.startsWith("??") || (line.length > 1 && line[1] !== " "),
+      )
+  ) {
+    throw new Error(
+      `Validation changed files or left untracked files in ${repo}. Review and run continue.`,
+    );
+  }
+  const commit = commitTree(
+    repo,
+    acceptedTree,
+    `Upgrade Koi blueprint to ${source.commit}`,
+    head,
+  );
+  git(
+    project,
+    "fetch",
+    "--quiet",
+    "--no-tags",
+    "--no-write-fetch-head",
+    repo,
+    commit,
+  );
+  git(project, "update-ref", ref, commit, "0".repeat(40));
+  await rm(workspace, { recursive: true, force: true });
+  console.log(
+    `Validated upgrade ${commit}. Review with git diff HEAD..${branch} in the app, then merge ${branch}.`,
+  );
+}
+
+async function apply(project, workspace, head, source, target) {
+  assertAppHead(project, head);
+  if (source.commit === target) {
+    console.log("No file changes. The app is already on this blueprint.");
+    return;
+  }
+  try {
+    await mkdir(workspace);
+  } catch (error) {
+    if (error.code !== "EEXIST") throw error;
+    throw new Error("An upgrade already exists. Run continue or abort.");
+  }
+  let state;
+  try {
+    const snapshots = await prepare(workspace, project, head, source, target);
+    const files = [...inspectMerge(snapshots).keys()];
+    const collisions = localCollisions(project, files);
+    if (collisions.length) {
+      throw new Error(
+        "Move aside occupied upgrade paths: " + collisions.join(", "),
+      );
+    }
+    const { repo, local, next } = snapshots;
+    git(repo, "checkout", "--quiet", "--detach", "--force", local);
+    const result = gitResult(repo, "merge", "--no-ff", "--no-commit", next);
+    const conflicts = git(repo, "ls-files", "-u");
+    output(result, conflicts ? [0, 1] : [0]);
+    const pending = {
+      head,
+      mergeHead: local,
+      source: { ...source, commit: target },
+      files,
+    };
+    await writeFile(
+      path.join(workspace, "state.json"),
+      JSON.stringify(pending),
+    );
+    state = pending;
+    await finish(project, workspace, state);
+  } finally {
+    if (!state) await rm(workspace, { recursive: true, force: true });
+  }
+}
+
 async function main() {
-  const { project: projectArgument, values } = parseCommand();
+  const { command, project: projectArgument, values } = parseCommand();
   const project = await resolveProject(projectArgument);
+  const staging = path.join(
+    git(project, "rev-parse", "--path-format=absolute", "--git-dir").trim(),
+    "koi-upgrade",
+  );
+  if (command === "abort") {
+    await workspaceLock(staging, async () => {
+      await rm(staging, { recursive: true, force: true });
+      console.log(
+        "Upgrade workspace removed. The original app branch and commit are intact.",
+      );
+    });
+    return;
+  }
+  if (command === "continue") {
+    await workspaceLock(staging, async () => {
+      const state = JSON.parse(
+        await readFile(path.join(staging, "state.json"), "utf8"),
+      );
+      await finish(project, staging, state);
+    });
+    return;
+  }
   const head = git(project, "rev-parse", "HEAD").trim();
   const source = sourceAt(project, head, values);
   const target = values.to;
@@ -297,6 +549,17 @@ async function main() {
     );
   }
   console.log(`App HEAD ${head}\nBlueprint ${source.commit} → ${target}`);
+  if (command === "apply") {
+    if (values["expect-head"] !== head) {
+      throw new Error(
+        "App HEAD changed. Preview again and use the newly reported App HEAD.",
+      );
+    }
+    await workspaceLock(staging, () =>
+      apply(project, staging, head, source, target),
+    );
+    return;
+  }
   const workspace = await mkdtemp(
     path.join(os.tmpdir(), "koi-upgrade-preview-"),
   );
@@ -311,6 +574,11 @@ async function main() {
       console.log(
         "Compare each conflict in the old render, app HEAD, and new render.",
       );
+      process.exitCode = 1;
+    }
+    const collisions = localCollisions(project, [...changes.keys()]);
+    if (collisions.length) {
+      console.log("Local files occupy upgrade paths: " + collisions.join(", "));
       process.exitCode = 1;
     }
   } finally {

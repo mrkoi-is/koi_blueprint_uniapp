@@ -86,7 +86,7 @@ Top 10 审计或建设规格复制进去。
 
 新项目的 `.koi-blueprint.json` 保存蓝图提交和原始生成参数，请与应用源码一起提交。
 如提交字段为 `null`，请从原始创建记录核实来源。有业务改动时先运行升级预览。
-[迭代升级路线图](docs/iteration-upgrade-plan.md)
+[升级命令与冲突处理](docs/upgrade-generated-app.md) · [迭代升级路线图](docs/iteration-upgrade-plan.md)
 
 ## 公开环境配置
 
