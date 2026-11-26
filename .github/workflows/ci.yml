@@ -24,11 +24,15 @@ jobs:
         os: [ubuntu-latest, windows-latest]
     steps:
       - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v5
         with:
           node-version-file: .nvmrc
       - name: Validate audit, blueprint, and generator edge cases
         run: npm run validate:blueprint
+      - name: Test upgrade from pinned historical commits
+        run: npm run check:upgrade
 
   validate-generated-project:
     name: Validate freshly generated project
